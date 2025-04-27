@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
-	"version": "1.0.0",
+	"id": "monokakido-copilot",
+	"name": "Monokakido Copilot",
+	"version": "0.0.1",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "During editing, simply double-press the option key to search with the Dictionaries by Monokakido.",
+	"author": "NoHeartPen",
+	"authorUrl": "https://github.com/NoHeartPen",
+	"fundingUrl": "https://ko-fi.com/noheartpen",
 	"isDesktopOnly": false
 }
