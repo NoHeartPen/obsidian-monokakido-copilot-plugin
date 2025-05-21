@@ -128,7 +128,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	private openHistoryFile() {
 		const vault = this.app.vault;
 		const filePath = PLUGIN_SETTINGS.historyFilePath;
-		const file = vault.getAbstractFileByPath(filePath);
+		const file = vault.getFileByPath(filePath);
 		if (file instanceof TFile) {
 			this.app.workspace.openLinkText(filePath, '', true);
 		} else {
