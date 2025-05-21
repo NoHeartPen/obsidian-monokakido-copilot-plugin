@@ -1,4 +1,4 @@
-# Obsidian Monokakido Copilot Plugin
+# Monokakido Copilot for Obsidian
 
 [日本語版](./README.ja.md)
 

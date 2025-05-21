@@ -1,4 +1,4 @@
-# Obsidian Monokakido Copilot Plugin
+# Monokakido Copilot for Obsidian
 
 `Option`キーをダブルクリックすると、[辞書 by 物書堂](https://www.monokakido.jp/ja/dictionaries/app/index.html) で検索します。
 
