@@ -1,5 +1,7 @@
 import { PLUGIN_SETTINGS, debugLog } from 'src/main';
 
+import { requestUrl } from 'obsidian';
+
 /**
  * 获取光标处附近的英文单词
  * @param context 光标所在的上下文
@@ -35,25 +37,31 @@ export async function analyzeCursorWord(context: string, cursorIndex: number): P
     if (!context.match(/[\u3040-\u309F\u30A0-\u30FF]/)) {
         return getCursorEnglishWord(context, cursorIndex);
     }
-    const response = await fetch(PLUGIN_SETTINGS.morphemeAnalysisAPI, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            sentence: context,
-            cursor_index: cursorIndex
-        })
-    });
+    try {
+        const response = await requestUrl({
+            url: PLUGIN_SETTINGS.morphemeAnalysisAPI,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                sentence: context,
+                cursor_index: cursorIndex
+            })
+        });
 
-    if (!response.ok) {
-        console.error('HTTP error:', response.status);
+        if (response.status !== 200) {
+            console.error('HTTP error:', response.status);
+            return;
+        }
+
+        const data = await response.json;
+        // 返回的数据格式： {jishokei: 'かける'}
+        debugLog(data);
+        const cursorWords = data.jishokei;
+        return cursorWords;
+    } catch (error) {
+        console.error('Request failed:', error);
         return;
     }
-
-    const data = await response.json();
-    // 返回的数据格式： {jishokei: 'かける'}
-    debugLog(data);
-    const cursorWords = data.jishokei;
-    return cursorWords;
 }
