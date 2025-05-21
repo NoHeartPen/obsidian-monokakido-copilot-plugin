@@ -80,8 +80,9 @@ function getContextAndIndex(): { context: string; cursorIndex: number; } | null 
  * 并将上下文和单词保存到历史记录
  */
 export async function getCursorWord(): Promise<string | undefined> {
-    const context = getContextAndIndex()?.context ?? "";
-    const cursorIndex = getContextAndIndex()?.cursorIndex ?? 0;
+    const result = getContextAndIndex();
+    const context = result?.context ?? "";
+    const cursorIndex = result?.cursorIndex ?? 0;
     debugLog(`context: ${context}, cursorIndex: ${cursorIndex}`);
     const word = await analyzeCursorWord(context, cursorIndex);
     debugLog(`cursorWord: ${word}`);
