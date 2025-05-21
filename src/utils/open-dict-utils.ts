@@ -10,7 +10,7 @@ export async function write2ClipBoard(word: string) {
         await navigator.clipboard.writeText(word);
         debugLog(`write 「${word}」 to clipboard successfully`);
     } catch (err) {
-        console.error('can not write to clipboard :', err);
+        console.error('cannot write to clipboard :', err);
     }
 }
 /**
