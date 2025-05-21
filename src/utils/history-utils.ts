@@ -42,7 +42,7 @@ export async function writeToHistory(filePath: string, context: string, word: st
     /**
      * 添加所查单词的文件作为反向链接
      */
-    const backLink = `[[${activeFile.basename}]]`;
+    const backLink = this.app.fileManager.generateMarkdownLink(activeFile, activeFile.path);
     context = removeMarkdownSyntax(context);
 
     const vault = this.app.vault;
