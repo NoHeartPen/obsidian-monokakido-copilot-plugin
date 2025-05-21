@@ -118,7 +118,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 
 		this.addCommand({
 			id: 'search-cursor-word',
-			name: 'Search Cursor word',
+			name: 'Search cursor word',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				searchWordAtCursor();
 			},
@@ -168,7 +168,7 @@ class SettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Dict URL Scheme')
+			.setName('Dict URL scheme')
 			.setDesc('')
 			.addText(text => text
 				.setPlaceholder(PLUGIN_SETTINGS.dictURL)
