@@ -65,12 +65,31 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	private lastKeyupTime = 0;
 	private lastKeyWasDouble: boolean
 
+
+	/**
+	 * 监听键盘按键弹起事件，启用时调用 searchOnDoublePress 处理双击搜索逻辑
+	 * @param event 键盘事件
+	 */
+	private onKeyUpHandler = (event: KeyboardEvent) => {
+		if (!this.settings.enableDoubleClickSearch) return;
+		this.searchOnDoublePress(event);
+	};
+
+
+	/**
+	 * 监听键盘按键按下事件，启用时调用 clearTimerOnDoublePress 清理双击定时器
+	 * @param event 键盘事件
+	 */
+	private onKeyDownHandler = (event: KeyboardEvent) => {
+		if (!this.settings.enableDoubleClickSearch) return;
+		this.clearTimerOnDoublePress(event);
+	};
+
 	/**
 	 * 双击监听指定按键时触发搜索
-	 * @param event 
-	 * @param app 
+	 * @param event 键盘事件
 	 */
-	public searchOnDoublePress(event: KeyboardEvent, app: App) {
+	private searchOnDoublePress(event: KeyboardEvent) {
 		const key = event.key;
 		if (key !== PLUGIN_SETTINGS.doubleClickedKey) {
 			this.lastKeyupTime = 0;
@@ -91,8 +110,9 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 
 	/** 
 	 * 双击指定按键后清空计时器
+	 * @param event 键盘事件
 	 */
-	public clearTimerOnDoublePress(event: KeyboardEvent) {
+	private clearTimerOnDoublePress(event: KeyboardEvent) {
 		if (event.key !== PLUGIN_SETTINGS.doubleClickedKey) {
 			this.lastKeyWasDouble = true;
 		}
@@ -101,8 +121,8 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		if (this.settings.enableDoubleClickSearch) {
-		this.registerDomEvent(window, 'keyup', (event) => this.searchOnDoublePress(event, this.app));
-		this.registerDomEvent(window, 'keydown', (event) => this.clearTimerOnDoublePress(event));
+			this.registerDomEvent(window, 'keyup', this.onKeyUpHandler);
+			this.registerDomEvent(window, 'keydown', this.onKeyDownHandler);
 		}
 
 		this.addRibbonIcon('file-clock', 'Monokakido Copilot history', () => {
@@ -191,17 +211,11 @@ class SettingTab extends PluginSettingTab {
 			.setName('Enable double-click search')
 			.setDesc('Enable or disable search by double-pressing the alt key')
 			.addToggle(toggle =>
-				toggle.setValue(this.plugin.settings.enableDoubleClickSearch)
+				toggle
+					.setValue(this.plugin.settings.enableDoubleClickSearch)
 					.onChange(async (value) => {
 						this.plugin.settings.enableDoubleClickSearch = value;
 						await this.plugin.saveSettings();
-
-						if (value) {
-							this.plugin.registerDomEvent(window, 'keyup', (event) => this.plugin.searchOnDoublePress(event, this.plugin.app));
-							this.plugin.registerDomEvent(window, 'keydown', (event) => this.plugin.clearTimerOnDoublePress(event));
-						} else {
-							// TODO  Obsidian官方API的registerDomEvent并没直接返回注销句柄，且是在this.registerDomEvent内包装实现，会自动在插件卸载时注销。
-						}
 					}));
 	}
 }
