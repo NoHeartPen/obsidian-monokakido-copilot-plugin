@@ -55,7 +55,7 @@ export const PLUGIN_SETTINGS: PluginSettingsInterface = {
 	doubleClickedKey: 'Alt',
 	// 查词历史记录文件路径
 	historyFilePath: 'MonoKakido Copilot History.md',
-	// 默认使用剪贴板查询模式
+	// 默认使用双击指定按键触发搜索
 	enableDoubleClickSearch: true,
 }
 
@@ -196,7 +196,7 @@ class SettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Dict URL scheme')
+			.setName('Custom dictionary URL scheme')
 			.setDesc('')
 			.addText(text => text
 				.setPlaceholder(PLUGIN_SETTINGS.dictURL)
