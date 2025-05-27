@@ -1,7 +1,7 @@
 {
 	"id": "monokakido-copilot",
 	"name": "Monokakido Copilot",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"minAppVersion": "1.5.7",
 	"description": "During editing, simply double-press the option key to search with the Dictionaries by Monokakido.",
 	"author": "NoHeartPen",
