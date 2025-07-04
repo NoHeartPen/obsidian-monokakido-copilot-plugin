@@ -8,6 +8,10 @@ Double press the `Option` key to search with [Dictionaries by Monokakido](https:
 
 All you need is just **double** press the `Option` key.
 
+## Frequently Asked Questions
+
+See [here](./docs/faq.md) for details.
+
 ## How to Install
 
 ### From within Obsidian
