@@ -51,7 +51,7 @@ Contributions via bug reports, feature requests and pull requests are welcome
 
 ⭐Want a feature?
 
-1. Open a [GitHub issue](https://github.com/NoHeartPen/obsidian-monokakido-copilot-plugin/issues) with a title starting with "Feature Request:" and a short summary. 
+1. Open a [GitHub issue](https://github.com/NoHeartPen/obsidian-monokakido-copilot-plugin/issues) with a title starting with "Feature Request:" and a short summary.
 2. In the description:
     - Explain the functionality you'd like to see
     - Include your use case and why it would help
