@@ -82,6 +82,13 @@ function getContextAndIndex(): { context: string; cursorIndex: number; } | null 
 export async function getCursorWord(): Promise<string | undefined> {
     const result = getContextAndIndex();
     const context = result?.context ?? "";
+
+    if (!context) {
+        // 如果没有获取到上下文，则返回 undefined
+        new Notice("あれ？何も入力されていないのよ");
+        return;
+    }
+
     const cursorIndex = result?.cursorIndex ?? 0;
     debugLog(`context: ${context}, cursorIndex: ${cursorIndex}`);
     const word = await analyzeCursorWord(context, cursorIndex);
