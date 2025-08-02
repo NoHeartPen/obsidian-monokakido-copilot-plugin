@@ -1,6 +1,6 @@
 import { PLUGIN_SETTINGS, debugLog } from 'src/main';
 
-import { requestUrl } from 'obsidian';
+import { Notice, requestUrl } from 'obsidian';
 
 /**
  * 获取光标处附近的英文单词
@@ -38,6 +38,11 @@ export async function analyzeCursorWord(context: string, cursorIndex: number): P
         return getCursorEnglishWord(context, cursorIndex);
     }
     try {
+        if (!navigator.onLine) {
+            // 无网络链接时，不查询非英语单词而是进行提示
+            new Notice('あれ？ネットがないみたいだね');
+            return;
+        }
         const response = await requestUrl({
             url: PLUGIN_SETTINGS.morphemeAnalysisAPI,
             method: 'POST',
