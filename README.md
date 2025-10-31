@@ -1,5 +1,7 @@
 # Monokakido Copilot for Obsidian
 
+![Obsidian Download](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=Downloads&query=$%5B%22monokakido-copilot%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json) ![Total Downloads](https://img.shields.io/github/downloads/NoHeartPen/obsidian-monokakido-copilot-plugin/total?style=flat&label=Total%20Downloads) ![GitHub Issues](https://img.shields.io/github/issues/NoHeartPen/obsidian-monokakido-copilot-plugin?style=flat&label=Issues) ![GitHub Last Commit](https://img.shields.io/github/last-commit/NoHeartPen/obsidian-monokakido-copilot-plugin?style=flat&label=Last%20Commit)
+
 [日本語版](./README.ja.md)
 
 Double press the `Option` key to search with [Dictionaries by Monokakido](https://www.monokakido.jp/en/dictionaries/app/index.html).
