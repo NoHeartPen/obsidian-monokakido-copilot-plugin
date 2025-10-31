@@ -57,3 +57,7 @@ Contributions via bug reports, feature requests and pull requests are welcome
 2. In the description:
     - Explain the functionality you'd like to see
     - Include your use case and why it would help
+
+## Disclaimer
+
+This plugin is not affiliated with [MONOKAKIDO Co. Ltd. (JAPAN)](https://www.monokakido.jp/en/about.html). The Monokakido trademark is the property of [MONOKAKIDO Co. Ltd. (JAPAN)](https://www.monokakido.jp/en/about.html).

@@ -56,3 +56,6 @@ Obsidian v0.15.0+ から、Obsidian 内でこのプラグインを有効にす�
     - 追加してほしい機能の内容
     - その機能の使用例や、なぜ必要なのかという理由
 
+## 免責事項
+
+このプラグインは[株式会社 物書堂](https://www.monokakido.jp/ja/about.html)が提供するものではなく、また[株式会社 物書堂](https://www.monokakido.jp/ja/about.html)とは一切関係ありません。物書堂の商標は[株式会社 物書堂](https://www.monokakido.jp/ja/about.html)の所有物です。
