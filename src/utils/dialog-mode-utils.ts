@@ -185,21 +185,23 @@ class SearchDialog extends Modal {
 		if (this.cursorAnalysisTimer) {
 			globalThis.clearTimeout(this.cursorAnalysisTimer);
 		}
-		this.cursorAnalysisTimer = globalThis.setTimeout(async () => {
-			const rawWord = getRawCursorWord(context, cursorIndex);
-			const analyzedWord = await analyzeCursorWord(context, cursorIndex);
+		this.cursorAnalysisTimer = globalThis.setTimeout(() => {
+			void (async () => {
+				const rawWord = getRawCursorWord(context, cursorIndex);
+				const analyzedWord = await analyzeCursorWord(context, cursorIndex);
 
-			if (!analyzedWord) return;
+				if (!analyzedWord) return;
 
-			// 更新 data（仅刷新内部数据，不自动选中）
-			this.data.context = context;
-			this.data.cursorIndex = cursorIndex;
-			this.data.searchWord = analyzedWord;
-			this.data.rawWord = rawWord;
+				// 更新 data（仅刷新内部数据，不自动选中）
+				this.data.context = context;
+				this.data.cursorIndex = cursorIndex;
+				this.data.searchWord = analyzedWord;
+				this.data.rawWord = rawWord;
 
-			// 仅更新候选词按钮，等用户主动点击后才填入搜索框/更新词典
-			this.candidates = this.buildCandidates(this.data);
-			this.renderCandidates();
+				// 仅更新候选词按钮，等用户主动点击后才填入搜索框/更新词典
+				this.candidates = this.buildCandidates(this.data);
+				this.renderCandidates();
+			})();
 		}, 300);
 	}
 
