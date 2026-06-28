@@ -240,9 +240,8 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			id: 'search-cursor-word',
 			name: 'カーソルの単語を検索',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				searchWordAtCursor();
+				await searchWordAtCursor();
 			},
-		});
 
 		this.addCommand({
 			id: 'search-cursor-word-dialog',
