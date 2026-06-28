@@ -1,8 +1,9 @@
-import { MarkdownView, Notice, Platform } from 'obsidian';
+import { App, MarkdownView, Notice, Platform } from 'obsidian';
 import { debugLog, PLUGIN_SETTINGS } from '../main';
 import { openDictUrl, write2ClipBoard } from './open-dict-utils';
-import { analyzeCursorWord } from './analyze-word-utils';
+import { analyzeCursorWord, getRawCursorWord } from './analyze-word-utils';
 import { writeToHistory } from './history-utils';
+import { openDialogMode } from './dialog-mode-utils';
 
 /**
  * 搜索光标附近的单词
@@ -15,6 +16,34 @@ export async function searchWordAtCursor() {
             return;
         }
         doSearch(cursorWord);
+    } catch (error) {
+        console.error('Error getting cursor word:', error);
+    }
+}
+
+/**
+ * 在 Dialog 模式中搜索光标附近的单词
+ */
+export async function searchWordAtCursorInDialog() {
+    try {
+        const result = getContextAndIndex();
+        if (!result) {
+            new Notice("あれ？何も入力されていないのよ");
+            return;
+        }
+        new Notice('分析中、少々お待ちください。');
+
+        const { context, cursorIndex } = result;
+        const word = await analyzeCursorWord(context, cursorIndex);
+        if (!word) {
+            return;
+        }
+
+        // 获取光标附近的原始文本（未经分析处理，用作候选词第4个）
+        const rawWord = getRawCursorWord(context, cursorIndex);
+
+        const app = (window as any).app;
+        openDialogMode(app, { context, searchWord: word, cursorIndex, rawWord });
     } catch (error) {
         console.error('Error getting cursor word:', error);
     }
@@ -46,8 +75,9 @@ export async function doSearch(word: string) {
  *  - context {string} 当前光标所在行的文本内容
  *  - cursorIndex {number} 当前光标在该行内的字符索引（从0开始）
  */
-function getContextAndIndex(): { context: string; cursorIndex: number; } | null {
-    const view = this.app.workspace.getActiveViewOfType(MarkdownView);
+export function getContextAndIndex(): { context: string; cursorIndex: number; } | null {
+    const app = (window as any).app;
+    const view = app.workspace.getActiveViewOfType(MarkdownView);
     if (!view) {
         console.error('No active MarkdownView found.');
         return null;
@@ -94,7 +124,8 @@ export async function getCursorWord(): Promise<string | undefined> {
     const word = await analyzeCursorWord(context, cursorIndex);
     debugLog(`cursorWord: ${word}`);
     if (word !== undefined) {
-        writeToHistory(PLUGIN_SETTINGS.historyFilePath, context, word);
+        const app: App = (window as any).app;
+        writeToHistory(app, PLUGIN_SETTINGS.historyFilePath, context, word);
     }
     return word;
 }

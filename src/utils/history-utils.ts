@@ -1,4 +1,4 @@
-import { normalizePath, TFile } from 'obsidian';
+import { App, normalizePath, TFile } from 'obsidian';
 import { debugLog } from 'src/main';
 
 
@@ -31,10 +31,10 @@ function removeMarkdownSyntax(text: string): string {
  * @param context 查词时的上下文
  * @param word 查询的单词
  */
-export async function writeToHistory(filePath: string, context: string, word: string): Promise<void> {
+export async function writeToHistory(app: App, filePath: string, context: string, word: string, memo?: string): Promise<void> {
     const normalizedFilePath = normalizePath(filePath);
 
-    const activeFile = this.app.workspace.getActiveFile();
+    const activeFile = app.workspace.getActiveFile();
 
     if (!activeFile) {
         throw new Error('No active file found. Cannot create back link.');
@@ -42,12 +42,13 @@ export async function writeToHistory(filePath: string, context: string, word: st
     /**
      * 添加所查单词的文件作为反向链接
      */
-    const backLink = this.app.fileManager.generateMarkdownLink(activeFile, activeFile.path);
+    const backLink = app.fileManager.generateMarkdownLink(activeFile, activeFile.path);
     context = removeMarkdownSyntax(context);
 
-    const vault = this.app.vault;
+    const vault = app.vault;
     const file = vault.getAbstractFileByPath(normalizedFilePath);
-    const noteContent = `\n> ${context} ${backLink}\n> ${word}\n> メモ：\n`;
+    const memoLine = memo ? `> メモ：${memo}\n` : `> メモ：\n`;
+    const noteContent = `\n> ${context} ${backLink}\n> ${word}\n${memoLine}`;
 
     if (file instanceof TFile) {
         await vault.append(file, noteContent);
