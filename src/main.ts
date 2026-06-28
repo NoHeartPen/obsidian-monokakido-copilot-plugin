@@ -314,11 +314,12 @@ class SettingTab extends PluginSettingTab {
 					.addOption('quick', 'Quick モード')
 					.addOption('dialog', 'Dialog モード')
 					.setValue(this.plugin.settings.searchMode)
-					.onChange(async (value: 'quick' | 'dialog') => {
-						this.plugin.settings.searchMode = value;
-						PLUGIN_SETTINGS.searchMode = value;
+					.onChange(async (value) => {
+						const mode = value as 'quick' | 'dialog';
+						this.plugin.settings.searchMode = mode;
+						PLUGIN_SETTINGS.searchMode = mode;
 						if (this.plugin.statusBarItemEl) {
-							this.plugin.statusBarItemEl.setText(value === 'quick' ? 'Quick モード' : 'Dialog モード');
+							this.plugin.statusBarItemEl.setText(mode === 'quick' ? 'Quick モード' : 'Dialog モード');
 						}
 						await this.plugin.saveSettings();
 					}));
