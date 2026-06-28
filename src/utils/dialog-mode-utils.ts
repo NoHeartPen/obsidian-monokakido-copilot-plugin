@@ -59,6 +59,10 @@ class SearchDialog extends Modal {
 	*/
 	private lastCursorPos: number = -1;
 	/**
+	 * 对话框打开时保存的编辑器光标位置，用于关闭后恢复视口
+	 */
+	private savedEditorCursor: import('obsidian').EditorPosition | null = null;
+	/**
 	 * 防抖定时器 ID，用于光标移动后延迟分析单词
 	 */
 	private cursorAnalysisTimer: ReturnType<typeof setTimeout> | null = null;
@@ -100,6 +104,10 @@ class SearchDialog extends Modal {
 	}
 
 	onOpen() {
+		const view = this.app.workspace.getMostRecentLeaf()?.view;
+		if (view instanceof MarkdownView) {
+			this.savedEditorCursor = view.editor.getCursor();
+		}
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -440,6 +448,19 @@ class SearchDialog extends Modal {
 		this.renderCandidates();
 		// 手动点击候选词时自动触发第一个（默认）辞典按钮
 		window.open(buildDictUrl(this.searchWord), '_blank');
+	}
+
+	onClose() {
+		// 移动端键盘收起会导致视口偏移；不 focus 编辑器（避免再次唤起键盘），
+		// 延迟等键盘动画结束后把视口滚回光标位置
+		if (!this.savedEditorCursor) return;
+		const cursor = this.savedEditorCursor;
+		setTimeout(() => {
+			const view = this.app.workspace.getMostRecentLeaf()?.view;
+			if (view instanceof MarkdownView) {
+				view.editor.scrollIntoView({ from: cursor, to: cursor }, true);
+			}
+		}, 350);
 	}
 
 	/**
