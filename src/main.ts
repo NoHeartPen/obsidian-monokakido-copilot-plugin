@@ -242,6 +242,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				await searchWordAtCursor();
 			},
+		});
 
 		this.addCommand({
 			id: 'search-cursor-word-dialog',
