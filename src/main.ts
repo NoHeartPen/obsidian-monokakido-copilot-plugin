@@ -346,11 +346,10 @@ class SettingTab extends PluginSettingTab {
 					}));
 
 		// 允许用户自定义 Dialog 模式的辞书按钮
-		containerEl.createEl('h3', { text: 'Dialog モードの辞書ボタンを追加' });
-		containerEl.createEl('p', {
-			text: '「デフォルトの辞書」（上記 dictURL）の後に表示される追加ボタンです。ラベルと URL スキーマを設定してください。',
-			cls: 'setting-item-description',
-		});
+		new Setting(containerEl)
+			.setName('Dialog モードの辞書ボタンを追加')
+			.setDesc('「デフォルトの辞書」（上記 dictURL）の後に表示される追加ボタンです。ラベルと URL スキーマを設定してください。')
+			.setHeading();
 
 		const categoriesContainer = containerEl.createDiv();
 
