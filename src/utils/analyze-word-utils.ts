@@ -29,7 +29,7 @@ function getCursorEnglishWord(context: string, cursorIndex: number): string {
 /**
  * FIXME 获取光标附近的原始单词（未经形态素分析处理）
  * - 英文: 以空白字符为边界提取单词
- * - 日文: 以空白/标点符号为边界，最大前后各30字符
+ * - 日文: 以空白/标点符号为边界，最大前后各10字符
  * @param context 光标所在的上下文文本
  * @param cursorIndex 光标在上下文中的位置
  * @returns 提取的原始单词字符串
