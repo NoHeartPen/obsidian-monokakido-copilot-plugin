@@ -438,6 +438,8 @@ class SearchDialog extends Modal {
 		this.renderDictButtons();
 		// 重新渲染候选词按钮以更新高亮
 		this.renderCandidates();
+		// 手动点击候选词时自动触发第一个（默认）辞典按钮
+		window.open(buildDictUrl(this.searchWord), '_blank');
 	}
 
 	/**
