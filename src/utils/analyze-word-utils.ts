@@ -27,6 +27,50 @@ function getCursorEnglishWord(context: string, cursorIndex: number): string {
 
 
 /**
+ * FIXME 获取光标附近的原始单词（未经形态素分析处理）
+ * - 英文: 以空白字符为边界提取单词
+ * - 日文: 以空白/标点符号为边界，最大前后各30字符
+ * @param context 光标所在的上下文文本
+ * @param cursorIndex 光标在上下文中的位置
+ * @returns 提取的原始单词字符串
+ */
+export function getRawCursorWord(context: string, cursorIndex: number): string {
+    if (!context || cursorIndex < 0 || cursorIndex > context.length) {
+        return '';
+    }
+
+    // 不包含假名 → 英文模式，按空白边界提取
+    if (!context.match(/[぀-ゟ゠-ヿ]/)) {
+        return getCursorEnglishWord(context, cursorIndex);
+    }
+
+    // 日文模式：按空白/标点符号边界提取，最大前后各10 字符
+    const maxWindow = 10;
+    let start = cursorIndex;
+    let end = cursorIndex;
+
+    // 向前扩展
+    while (start > 0 && cursorIndex - start < maxWindow) {
+        const ch = context[start - 1];
+        if (/[\s　-〿＀-￯!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(ch)) {
+            break;
+        }
+        start--;
+    }
+
+    // 向后扩展
+    while (end < context.length && end - cursorIndex < maxWindow) {
+        const ch = context[end];
+        if (/[\s　-〿＀-￯!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(ch)) {
+            break;
+        }
+        end++;
+    }
+
+    return context.substring(start, end);
+}
+
+/**
  * 分析光标附近的单词
  * @param context 光标所在的上下文
  * @param cursorIndex 光标的位置
