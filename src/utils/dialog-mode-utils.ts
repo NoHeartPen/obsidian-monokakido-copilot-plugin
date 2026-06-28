@@ -480,7 +480,7 @@ class SearchDialog extends Modal {
 		}
 		const memo = this.memoTextArea?.value?.trim() ?? '';
 		try {
-			await writeToHistory(PLUGIN_SETTINGS.historyFilePath, this.data.context, this.searchWord, memo);
+			await writeToHistory(this.app, PLUGIN_SETTINGS.historyFilePath, this.data.context, this.searchWord, memo);
 			new Notice(`"${this.searchWord}" をメモに追加しました`);
 			this.close();
 		} catch (e) {
@@ -497,7 +497,7 @@ class SearchDialog extends Modal {
 			return;
 		}
 		try {
-			await writeToHistory(PLUGIN_SETTINGS.historyFilePath, this.data.context, this.searchWord, '');
+			await writeToHistory(this.app, PLUGIN_SETTINGS.historyFilePath, this.data.context, this.searchWord, '');
 			this.close();
 			await this.openHistoryAtMemoLine();
 		} catch (e) {

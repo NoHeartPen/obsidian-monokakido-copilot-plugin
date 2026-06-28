@@ -1,4 +1,4 @@
-import { MarkdownView, Notice, Platform } from 'obsidian';
+import { App, MarkdownView, Notice, Platform } from 'obsidian';
 import { debugLog, PLUGIN_SETTINGS } from '../main';
 import { openDictUrl, write2ClipBoard } from './open-dict-utils';
 import { analyzeCursorWord, getRawCursorWord } from './analyze-word-utils';
@@ -124,7 +124,8 @@ export async function getCursorWord(): Promise<string | undefined> {
     const word = await analyzeCursorWord(context, cursorIndex);
     debugLog(`cursorWord: ${word}`);
     if (word !== undefined) {
-        writeToHistory(PLUGIN_SETTINGS.historyFilePath, context, word);
+        const app: App = (window as any).app;
+        writeToHistory(app, PLUGIN_SETTINGS.historyFilePath, context, word);
     }
     return word;
 }

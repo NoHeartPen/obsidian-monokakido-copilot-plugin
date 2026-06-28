@@ -1,4 +1,4 @@
-import { normalizePath, TFile } from 'obsidian';
+import { App, normalizePath, TFile } from 'obsidian';
 import { debugLog } from 'src/main';
 
 
@@ -31,10 +31,9 @@ function removeMarkdownSyntax(text: string): string {
  * @param context 查词时的上下文
  * @param word 查询的单词
  */
-export async function writeToHistory(filePath: string, context: string, word: string, memo?: string): Promise<void> {
+export async function writeToHistory(app: App, filePath: string, context: string, word: string, memo?: string): Promise<void> {
     const normalizedFilePath = normalizePath(filePath);
 
-    const app = (window as any).app;
     const activeFile = app.workspace.getActiveFile();
 
     if (!activeFile) {
