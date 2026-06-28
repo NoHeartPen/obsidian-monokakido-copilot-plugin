@@ -220,7 +220,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			if (this.statusBarItemEl) {
 				this.statusBarItemEl.setText(this.settings.searchMode === 'quick' ? 'Quick モード' : 'Dialog モード');
 			}
-			this.saveSettings();
+			void this.saveSettings().catch((err) => console.error('Failed to save settings:', err));
 		});
 
 		this.addSettingTab(new SettingTab(this.app, this));
