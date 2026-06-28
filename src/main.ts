@@ -248,7 +248,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			id: 'search-cursor-word-dialog',
 			name: 'Dialog モードでカーソルの単語を検索',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				searchWordAtCursorInDialog();
+				await searchWordAtCursorInDialog();
 			},
 		});
 	}
