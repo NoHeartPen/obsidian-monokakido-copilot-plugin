@@ -119,7 +119,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	 */
 	private onKeyUpHandler = (event: KeyboardEvent) => {
 		if (!this.settings.enableDoubleClickSearch) return;
-		this.searchOnDoublePress(event);
+		void this.searchOnDoublePress(event).catch(error => console.error('Search failed:', error));
 	};
 
 
@@ -161,12 +161,12 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 
 		if (this.settings.searchMode === 'dialog') {
 			// Dialog 模式: 直接弹起窗口模式对话框
-			await searchWordAtCursorInDialog();
+			await searchWordAtCursorInDialog(this.app);
 			return;
 		}
 
 		// Quick 模式: 检测是否为同一上下文的第二次双击
-		const current = getContextAndIndex();
+		const current = getContextAndIndex(this.app);
 
 		if (current && current.context !== ''
 			&& this.lastSearchContext === current.context
@@ -174,7 +174,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			// 同一上下文双击两次 → 自动切换到 Dialog 模式
 			this.lastSearchContext = null;
 			this.lastSearchCursorIndex = null;
-			await searchWordAtCursorInDialog();
+			await searchWordAtCursorInDialog(this.app);
 			return;
 		}
 
@@ -183,7 +183,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			this.lastSearchContext = current.context;
 			this.lastSearchCursorIndex = current.cursorIndex;
 		}
-		await searchWordAtCursor();
+		await searchWordAtCursor(this.app);
 	}
 
 	/**
@@ -199,8 +199,8 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		if (this.settings.enableDoubleClickSearch) {
-			this.registerDomEvent(window, 'keyup', this.onKeyUpHandler);
-			this.registerDomEvent(window, 'keydown', this.onKeyDownHandler);
+			this.registerDomEvent(this.app.workspace.containerEl.ownerDocument, 'keyup', this.onKeyUpHandler);
+			this.registerDomEvent(this.app.workspace.containerEl.ownerDocument, 'keydown', this.onKeyDownHandler);
 		}
 
 		this.addRibbonIcon('file-clock', 'Monokakido Copilot history', () => {
@@ -240,7 +240,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			id: 'search-cursor-word',
 			name: 'カーソルの単語を検索',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				await searchWordAtCursor();
+				await searchWordAtCursor(this.app);
 			},
 		});
 
@@ -248,7 +248,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			id: 'search-cursor-word-dialog',
 			name: 'Dialog モードでカーソルの単語を検索',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				await searchWordAtCursorInDialog();
+				await searchWordAtCursorInDialog(this.app);
 			},
 		});
 	}
