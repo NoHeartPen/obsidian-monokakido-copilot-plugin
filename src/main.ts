@@ -271,7 +271,8 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, PLUGIN_SETTINGS, await this.loadData());
+		const data: unknown = await this.loadData();
+		this.settings = { ...PLUGIN_SETTINGS, ...(typeof data === 'object' && data !== null ? data : {}) };
 		Object.assign(PLUGIN_SETTINGS, this.settings);
 	}
 
