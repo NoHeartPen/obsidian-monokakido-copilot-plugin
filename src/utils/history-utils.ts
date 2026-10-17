@@ -1,5 +1,5 @@
 import { App, normalizePath, TFile } from 'obsidian';
-import { debugLog } from 'src/main';
+import { debugLog } from '../main';
 
 
 /**

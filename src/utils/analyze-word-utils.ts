@@ -1,4 +1,4 @@
-import { PLUGIN_SETTINGS, debugLog } from 'src/main';
+import { PLUGIN_SETTINGS, debugLog } from '../main';
 
 import { Notice, requestUrl } from 'obsidian';
 

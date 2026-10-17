@@ -1,4 +1,4 @@
-import { debugLog, PLUGIN_SETTINGS } from "src/main";
+import { debugLog, PLUGIN_SETTINGS } from "../main";
 
 
 /**
