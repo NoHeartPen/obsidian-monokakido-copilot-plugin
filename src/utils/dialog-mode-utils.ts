@@ -59,9 +59,14 @@ class SearchDialog extends Modal {
 	*/
 	private lastCursorPos: number = -1;
 	/**
-	 * 对话框打开时保存的编辑器光标位置，用于关闭后恢复视口
+	 * 对话框打开前的编辑器状态，用于恢复原滚动位置
 	 */
-	private savedEditorCursor: import('obsidian').EditorPosition | null = null;
+	private savedEditorState: {
+		editor: import('obsidian').Editor;
+		file: TFile | null;
+		cursor: import('obsidian').EditorPosition;
+		scroll: { top: number; left: number };
+	} | null = null;
 	/**
 	 * 防抖定时器 ID，用于光标移动后延迟分析单词
 	 */
@@ -73,6 +78,16 @@ class SearchDialog extends Modal {
 		this.searchWord = data.searchWord;  // 默认选择第一个候选词（API 分析结果）
 		this.candidates = this.buildCandidates(data);
 		this.lastCursorPos = data.cursorIndex;
+		// 在 Modal.open() 改变焦点或唤起键盘之前保存位置。
+		const view = this.app.workspace.getMostRecentLeaf()?.view;
+		if (view instanceof MarkdownView) {
+			this.savedEditorState = {
+				editor: view.editor,
+				file: view.file,
+				cursor: view.editor.getCursor(),
+				scroll: view.editor.getScrollInfo(),
+			};
+		}
 	}
 
 	/**
@@ -104,10 +119,6 @@ class SearchDialog extends Modal {
 	}
 
 	onOpen() {
-		const view = this.app.workspace.getMostRecentLeaf()?.view;
-		if (view instanceof MarkdownView) {
-			this.savedEditorCursor = view.editor.getCursor();
-		}
 		const { contentEl } = this;
 		contentEl.empty();
 
@@ -458,15 +469,18 @@ class SearchDialog extends Modal {
 			this.cursorAnalysisTimer = null;
 		}
 
-		// 移动端键盘收起会导致视口偏移；不 focus 编辑器（避免再次唤起键盘），
-		// 延迟等键盘动画结束后把视口滚回光标位置
-		if (!this.savedEditorCursor) return;
-		const cursor = this.savedEditorCursor;
-		globalThis.setTimeout(() => {
+		// 移动端等待键盘收起后恢复原滚动偏移，不改变光标或焦点。
+		const saved = this.savedEditorState;
+		this.savedEditorState = null;
+		if (!this.isMobile() || !saved) return;
+		this.modalEl.ownerDocument.defaultView?.setTimeout(() => {
 			const view = this.app.workspace.getMostRecentLeaf()?.view;
-			if (view instanceof MarkdownView) {
-				view.editor.scrollIntoView({ from: cursor, to: cursor }, true);
-			}
+			// 切换笔记、编辑器或移动光标后，不再恢复旧位置。
+			if (!(view instanceof MarkdownView)
+				|| view.file !== saved.file || view.editor !== saved.editor) return;
+			const currentCursor = saved.editor.getCursor();
+			if (currentCursor.line !== saved.cursor.line || currentCursor.ch !== saved.cursor.ch) return;
+			saved.editor.scrollTo(saved.scroll.left, saved.scroll.top);
 		}, 350);
 	}
 
