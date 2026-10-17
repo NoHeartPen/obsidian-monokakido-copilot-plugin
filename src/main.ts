@@ -11,7 +11,7 @@ const isDebug = false;
  */
 export function debugLog(...args: string[]) {
 	if (isDebug) {
-		console.log(...args);
+		console.debug(...args);
 	}
 }
 
@@ -350,7 +350,7 @@ class SettingTab extends PluginSettingTab {
 		// 允许用户自定义 Dialog 模式的辞书按钮
 		new Setting(containerEl)
 			.setName('Dialog モードの辞書ボタンを追加')
-			.setDesc('「デフォルトの辞書」（上記 dictURL）の後に表示される追加ボタンです。ラベルと URL スキーマを設定してください。')
+			.setDesc('「デフォルトの辞書」（上記 URL）の後に表示される追加ボタンです。ラベルと URL スキーマを設定してください。')
 			.setHeading();
 
 		const categoriesContainer = containerEl.createDiv();

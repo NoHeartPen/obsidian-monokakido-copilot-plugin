@@ -15,6 +15,8 @@ export default defineConfig([
 		},
 		rules: {
 			'obsidianmd/prefer-active-doc': 'error',
+			// Pinned Obsidian 1.8.7 types do not expose the 1.13 declarative API.
+			'obsidianmd/settings-tab/prefer-setting-definitions': 'off',
 			'obsidianmd/ui/sentence-case': ['warn', {
 				brands: ['Monokakido Copilot'],
 				enforceCamelCaseLower: true,
