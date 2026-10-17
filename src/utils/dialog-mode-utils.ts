@@ -458,15 +458,21 @@ class SearchDialog extends Modal {
 			this.cursorAnalysisTimer = null;
 		}
 
-		// 移动端键盘收起会导致视口偏移；不 focus 编辑器（避免再次唤起键盘），
-		// 延迟等键盘动画结束后把视口滚回光标位置
-		if (!this.savedEditorCursor) return;
+		// 仅移动端需要等待键盘收起后恢复视口；桌面端保持原滚动位置。
+		// 不 focus 编辑器，避免再次唤起移动端键盘。
+		if (!this.isMobile() || !this.savedEditorCursor) return;
+		const view = this.app.workspace.getMostRecentLeaf()?.view;
+		if (!(view instanceof MarkdownView)) return;
+		const editor = view.editor;
+		const file = view.file;
 		const cursor = this.savedEditorCursor;
-		globalThis.setTimeout(() => {
-			const view = this.app.workspace.getMostRecentLeaf()?.view;
-			if (view instanceof MarkdownView) {
-				view.editor.scrollIntoView({ from: cursor, to: cursor }, true);
-			}
+		this.modalEl.ownerDocument.defaultView?.setTimeout(() => {
+			// 关闭后可能已打开历史笔记或切换页面，不再恢复旧位置。
+			if (this.app.workspace.getMostRecentLeaf()?.view !== view
+				|| view.file !== file || view.editor !== editor) return;
+			const currentCursor = editor.getCursor();
+			if (currentCursor.line !== cursor.line || currentCursor.ch !== cursor.ch) return;
+			editor.scrollIntoView({ from: cursor, to: cursor }, true);
 		}, 350);
 	}
 
