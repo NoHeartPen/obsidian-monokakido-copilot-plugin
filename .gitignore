@@ -1,5 +1,7 @@
 # vscode
-.vscode 
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # Intellij
 *.iml

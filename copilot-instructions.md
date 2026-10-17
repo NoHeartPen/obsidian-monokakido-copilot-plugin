@@ -5,6 +5,8 @@ applyTo: "**/*"
 
 Use the existing repository conventions and keep changes limited to the requested scope.
 
+- Follow `AGENTS.md`: after code changes, run `npm run lint:fix`, resolve remaining diagnostics, then run `npm run check` successfully before delivery. Do not leave ESLint errors or warnings for the user to fix.
+
 - Preserve the current TypeScript plugin structure in `src/`, including `obsidian` imports, plugin lifecycle methods, settings handling, and command registration.
 - Keep formatting and comments consistent with the repository style. Existing source files use TypeScript with descriptive JSDoc-style comments and mixed Chinese/Japanese annotations.
 - Prefer minimal, targeted changes rather than broad refactors. Do not modify unrelated files or workflows.
