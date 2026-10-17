@@ -204,7 +204,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 		}
 
 		this.addRibbonIcon('file-clock', 'Monokakido Copilot history', () => {
-			this.openHistoryFile();
+			void this.openHistoryFile().catch(error => console.error('Opening history failed:', error));
 		});
 
 		this.registerCommands();
@@ -232,7 +232,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			id: 'open-history',
 			name: '単語メモ帳を開く',
 			callback: () => {
-				this.openHistoryFile();
+				void this.openHistoryFile().catch(error => console.error('Opening history failed:', error));
 			},
 		});
 
@@ -253,20 +253,20 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 		});
 	}
 
-	private openHistoryFile() {
+	private async openHistoryFile() {
 		const vault = this.app.vault;
 		const filePath = PLUGIN_SETTINGS.historyFilePath;
 		const file = vault.getFileByPath(filePath);
 		if (file instanceof TFile) {
-			this.app.workspace.openLinkText(filePath, '', true);
+			await this.app.workspace.openLinkText(filePath, '', true);
 		} else {
 			// FIXME 封装，因为有可能在写入笔记时文件又被删除了
-			vault.create(
+			await vault.create(
 				filePath,
 				'# MonoKakido Copilot history\n\nThis document is used for history.'
 			);
 			new Notice(`単語メモ帳は: ${filePath}`);
-			this.app.workspace.openLinkText(filePath, '', true);
+			await this.app.workspace.openLinkText(filePath, '', true);
 		}
 	}
 
