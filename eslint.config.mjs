@@ -24,8 +24,15 @@ export default defineConfig([
 		},
 	},
 	{
+		files: ['tests/**/*.mjs'],
+		rules: {
+			// The test runner replaces Node globals to emulate browser boundaries.
+			'obsidianmd/no-global-this': 'off',
+		},
+	},
+	{
 		// These scripts run only in Node.js; mobile API restrictions apply to src/.
-		files: ['esbuild.config.mjs', 'version-bump.mjs', 'eslint.config.mjs'],
+		files: ['esbuild.config.mjs', 'version-bump.mjs', 'eslint.config.mjs', 'tests/**/*.mjs'],
 		rules: {
 			'obsidianmd/no-nodejs-modules': 'off',
 		},
