@@ -52,7 +52,7 @@ export function getRawCursorWord(context: string, cursorIndex: number): string {
     // 向前扩展
     while (start > 0 && cursorIndex - start < maxWindow) {
         const ch = context[start - 1];
-        if (/[\s　-〿＀-￯!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(ch)) {
+        if (/[\s\u3000-〿＀-￯!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(ch)) {
             break;
         }
         start--;
@@ -61,7 +61,7 @@ export function getRawCursorWord(context: string, cursorIndex: number): string {
     // 向后扩展
     while (end < context.length && end - cursorIndex < maxWindow) {
         const ch = context[end];
-        if (/[\s　-〿＀-￯!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(ch)) {
+        if (/[\s\u3000-〿＀-￯!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/.test(ch)) {
             break;
         }
         end++;
@@ -104,11 +104,13 @@ export async function analyzeCursorWord(context: string, cursorIndex: number): P
             return;
         }
 
-        const data = await response.json;
+        const data: unknown = response.json;
         // 返回的数据格式： {jishokei: 'かける'}
-        debugLog(data);
-        const cursorWords = data.jishokei;
-        return cursorWords;
+        debugLog(JSON.stringify(data));
+        if (typeof data === 'object' && data !== null && 'jishokei' in data
+            && typeof data.jishokei === 'string') {
+            return data.jishokei;
+        }
     } catch (error) {
         console.error('Request failed:', error);
         return;
