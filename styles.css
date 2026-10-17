@@ -1,0 +1,20 @@
+
+/* Monokakido controls and dialog layout. */
+.monokakido-full-width { width: 100%; }
+.monokakido-border-box { box-sizing: border-box; }
+.monokakido-hidden { display: none; }
+.monokakido-flex { display: flex; }
+.monokakido-wrap { flex-wrap: wrap; }
+.monokakido-center { text-align: center; }
+.monokakido-nowrap { white-space: nowrap; }
+.monokakido-content-width { flex: 0 0 auto; }
+.monokakido-max-width { max-width: 100%; }
+.monokakido-min-width { min-width: 0; }
+.monokakido-align-end { justify-content: flex-end; }
+.monokakido-dialog .monokakido-measured-width { flex: 0 0 var(--monokakido-button-width); }
+.monokakido-dialog .monokakido-textarea { padding: var(--size-4-2); }
+.monokakido-dialog .monokakido-candidates { gap: var(--size-2-3); }
+.monokakido-dialog .monokakido-actions { gap: var(--size-4-2); margin-top: var(--size-4-4); }
+.is-mobile .monokakido-dialog .monokakido-textarea { padding: var(--size-2-3) var(--size-4-2); }
+.is-mobile .monokakido-dialog .monokakido-candidates { gap: var(--size-4-1); }
+.is-mobile .monokakido-dialog .monokakido-actions { gap: var(--size-2-3); margin-top: var(--size-4-2); }
