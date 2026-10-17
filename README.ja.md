@@ -59,3 +59,13 @@ Obsidian v0.15.0+ から、Obsidian 内でこのプラグインを有効にす�
 ## 免責事項
 
 このプラグインは[株式会社 物書堂](https://www.monokakido.jp/ja/about.html)が提供するものではなく、また[株式会社 物書堂](https://www.monokakido.jp/ja/about.html)とは一切関係ありません。物書堂の商標は[株式会社 物書堂](https://www.monokakido.jp/ja/about.html)の所有物です。
+
+## 開発用テスト
+
+Node.js 24 を使用し、`npm ci` でロックされた依存関係をインストールします。
+
+- `npm test`：ユーティリティの自動テストを実行します。
+- `npm test -- --test-name-pattern="Japanese"`：テスト名で絞り込みます。
+- `npm run check`：警告なしの lint、テスト、TypeScript チェック、本番ビルドを順に実行します。GitHub Actions でも push、プルリクエスト、リリース時に実行されます。
+
+Node 標準のテストランナーと既存の esbuild を使い、実際の TypeScript ユーティリティをテストします。Obsidian API、設定、ネットワーク、クリップボードをモック化するため、Obsidian の起動や外部サービスへの接続は不要です。カーソル位置の単語抽出、解析リクエスト、辞書 URL、履歴の書き込みを検証します。ダイアログのレイアウト、ショートカット、実際の保管庫での動作は Obsidian 内での確認が必要です。
