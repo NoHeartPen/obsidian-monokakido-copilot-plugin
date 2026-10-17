@@ -31,7 +31,7 @@ class SearchDialog extends Modal {
 	data: DialogWordData;
 	searchWord: string;
 	candidates: (string | null)[];
-	private readonly buttonMeasureCanvas: HTMLCanvasElement = document.createElement('canvas');
+	private readonly buttonMeasureCanvas: HTMLCanvasElement;
 
 	/**
 	 * 候选词按钮容器，用于动态渲染候选词按钮
@@ -70,10 +70,12 @@ class SearchDialog extends Modal {
 	/**
 	 * 防抖定时器 ID，用于光标移动后延迟分析单词
 	 */
-	private cursorAnalysisTimer: ReturnType<typeof setTimeout> | null = null;
+	private cursorAnalysisTimer: number | null = null;
 
 	constructor(app: App, data: DialogWordData) {
 		super(app);
+		// Measurement needs a detached canvas; Node.createEl() appends to its receiver.
+		this.buttonMeasureCanvas = this.modalEl.ownerDocument.createElement('canvas');
 		this.data = data;
 		this.searchWord = data.searchWord;  // 默认选择第一个候选词（API 分析结果）
 		this.candidates = this.buildCandidates(data);
@@ -194,9 +196,9 @@ class SearchDialog extends Modal {
 	 */
 	private onCursorMove(context: string, cursorIndex: number) {
 		if (this.cursorAnalysisTimer) {
-			globalThis.clearTimeout(this.cursorAnalysisTimer);
+			this.modalEl.ownerDocument.defaultView?.clearTimeout(this.cursorAnalysisTimer);
 		}
-		this.cursorAnalysisTimer = globalThis.setTimeout(() => {
+		this.cursorAnalysisTimer = this.modalEl.ownerDocument.defaultView?.setTimeout(() => {
 			void (async () => {
 				const rawWord = getRawCursorWord(context, cursorIndex);
 				const analyzedWord = await analyzeCursorWord(context, cursorIndex);
@@ -212,8 +214,8 @@ class SearchDialog extends Modal {
 				// 仅更新候选词按钮，等用户主动点击后才填入搜索框/更新词典
 				this.candidates = this.buildCandidates(this.data);
 				this.renderCandidates();
-			})();
-		}, 300);
+			})().catch(error => console.error('Cursor analysis failed:', error));
+		}, 300) ?? null;
 	}
 
 	/**
@@ -268,8 +270,9 @@ class SearchDialog extends Modal {
 	 */
 	private applyMobileButtonContentWidth(btn: ButtonComponent) {
 		const el = btn.buttonEl;
-		const computed = globalThis.getComputedStyle(el);
+		const computed = el.ownerDocument.defaultView?.getComputedStyle(el);
 		const context = this.buttonMeasureCanvas.getContext('2d');
+		if (!computed) return;
 
 		el.style.textAlign = 'center';
 		el.style.whiteSpace = 'nowrap';
@@ -352,7 +355,7 @@ class SearchDialog extends Modal {
 		this.dictButtonContainer.style.justifyContent = 'flex-end';
 
 		if (!this.searchWord) {
-			this.dictButtonContainer.createEl('span', { text: '検索語がありません' });
+			this.dictButtonContainer.createSpan({ text: '検索語がありません' });
 			return;
 		}
 
@@ -362,7 +365,7 @@ class SearchDialog extends Modal {
 			.setButtonText('デフォルト')
 			.setCta()
 			.onClick(() => {
-				window.open(defaultUrl, '_blank');
+				this.modalEl.ownerDocument.defaultView?.open(defaultUrl, '_blank');
 			});
 
 		if (this.isMobile()) {
@@ -379,7 +382,7 @@ class SearchDialog extends Modal {
 			const btn = new ButtonComponent(this.dictButtonContainer)
 				.setButtonText(label)
 				.onClick(() => {
-					window.open(url, '_blank');
+					this.modalEl.ownerDocument.defaultView?.open(url, '_blank');
 				});
 
 			if (this.isMobile()) {
@@ -430,7 +433,7 @@ class SearchDialog extends Modal {
 			new ButtonComponent(btnContainer)
 				.setButtonText('メモ')
 				.onClick(() => {
-					this.addToNotesAndOpenMemo();
+					void this.addToNotesAndOpenMemo().catch(error => console.error('Saving memo failed:', error));
 				});
 		}
 
@@ -438,7 +441,7 @@ class SearchDialog extends Modal {
 			.setButtonText('確認')
 			.setCta()
 			.onClick(() => {
-				this.addToNotes();
+				void this.addToNotes().catch(error => console.error('Saving notes failed:', error));
 			});
 
 		new ButtonComponent(btnContainer)
@@ -460,12 +463,12 @@ class SearchDialog extends Modal {
 		// 重新渲染候选词按钮以更新高亮
 		this.renderCandidates();
 		// 手动点击候选词时自动触发第一个（默认）辞典按钮
-		window.open(buildDictUrl(this.searchWord), '_blank');
+		this.modalEl.ownerDocument.defaultView?.open(buildDictUrl(this.searchWord), '_blank');
 	}
 
 	onClose() {
 		if (this.cursorAnalysisTimer) {
-			globalThis.clearTimeout(this.cursorAnalysisTimer);
+			this.modalEl.ownerDocument.defaultView?.clearTimeout(this.cursorAnalysisTimer);
 			this.cursorAnalysisTimer = null;
 		}
 
@@ -555,7 +558,7 @@ class SearchDialog extends Modal {
 	private onDialogFirstOpened() {
 		if (this.searchWord) {
 			const dictUrl = buildDictUrl(this.searchWord);
-			window.open(dictUrl, '_blank');
+			this.modalEl.ownerDocument.defaultView?.open(dictUrl, '_blank');
 		}
 	}
 }
