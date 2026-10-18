@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile,MarkdownFileInfo } from 'obsidian';
+import { copyDictionaryLinks, exportDictionaryLinks } from './utils/dictionary-backup-utils';
 import { searchWordAtCursor, searchWordAtCursorInDialog, getContextAndIndex } from './utils/cursor-word-utils';
 
 /**
@@ -433,6 +434,36 @@ class SettingTab extends PluginSettingTab {
 		};
 
 		renderCategories();
+
+		new Setting(containerEl)
+			.setClass('monokakido-dictionary-backup')
+			.setName('辞書リンクのバックアップ')
+			.setDesc('辞書の設定を JSON 形式でコピー、またはファイルに保存できます。保存先は保管庫のルートです。')
+			.addButton(button => button
+				.setButtonText('コピー')
+				.onClick(async () => {
+					try {
+						await copyDictionaryLinks(this.plugin.settings, containerEl.ownerDocument);
+						new Notice('辞書リンクをコピーしました。');
+					} catch (error: unknown) {
+						console.error('Failed to copy dictionary links:', error);
+						new Notice('コピーできませんでした。JSON のエクスポートをお試しください。');
+					}
+				}))
+			.addButton(button => button
+				.setButtonText('JSON をエクスポート')
+				.onClick(async () => {
+					button.setDisabled(true);
+					try {
+						const path = await exportDictionaryLinks(this.plugin.settings, this.app.vault);
+						new Notice(`辞書リンクを保存しました: ${path}`);
+					} catch (error: unknown) {
+						console.error('Failed to export dictionary links:', error);
+						new Notice('辞書リンクを保存できませんでした。保管庫への書き込み権限を確認してください。');
+					} finally {
+						button.setDisabled(false);
+					}
+				}));
 
 		new Setting(containerEl)
 			.setName('ヘルプとフィードバック')

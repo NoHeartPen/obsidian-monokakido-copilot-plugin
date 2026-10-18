@@ -71,3 +71,30 @@
     color: var(--text-muted);
     font-size: var(--font-ui-small);
 }
+
+/* Keep backup actions below their description at every settings-window width. */
+.monokakido-settings .monokakido-dictionary-backup {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--size-4-3);
+}
+
+.monokakido-settings .monokakido-dictionary-backup .setting-item-info {
+    width: 100%;
+    margin-inline-end: 0;
+}
+
+.monokakido-settings .monokakido-dictionary-backup .setting-item-control {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--size-4-2);
+}
+
+.monokakido-settings .monokakido-dictionary-backup button {
+    max-width: 100%;
+    height: auto;
+    min-height: var(--input-height);
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
