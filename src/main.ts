@@ -433,5 +433,32 @@ class SettingTab extends PluginSettingTab {
 		};
 
 		renderCategories();
+
+		new Setting(containerEl)
+			.setName('ヘルプとフィードバック')
+			.setHeading();
+
+		const faq = new Setting(containerEl)
+			.setName('よくある質問');
+		faq.descEl.createEl('a', {
+			text: 'FAQ を開く',
+			href: 'https://github.com/NoHeartPen/obsidian-monokakido-copilot-plugin/blob/master/docs/faq.ja.md',
+			attr: { target: '_blank', rel: 'noopener noreferrer' },
+		});
+
+		const feedback = new Setting(containerEl)
+			.setName('ご意見・ご要望');
+		feedback.descEl.createEl('a', {
+			text: 'Google Form',
+			href: 'https://forms.gle/cgTbndS7LUxBhney9',
+			attr: { target: '_blank', rel: 'noopener noreferrer' },
+		});
+		feedback.descEl.appendText(' からお送りください。X で');
+		feedback.descEl.createEl('a', {
+			text: 'ハッシュタグ「#DictCopilot」',
+			href: 'https://twitter.com/intent/tweet?hashtags=DictCopilot',
+			attr: { target: '_blank', rel: 'noopener noreferrer' },
+		});
+		feedback.descEl.appendText('を付け、ご意見やご要望を投稿していただくのも大歓迎です！');
 	}
 }
