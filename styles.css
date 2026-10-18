@@ -43,7 +43,73 @@
     justify-content: flex-end;
 }
 
-/* Preserve the custom dictionary URL field's existing full width. */
-.setting-item-control input.monokakido-dictionary-url {
+/* Keep native Setting / TextComponent structure and mobile control styling. */
+.monokakido-settings .setting-item-info,
+.monokakido-settings .setting-item-control {
+    min-width: 0;
+}
+
+.monokakido-settings .setting-item-description {
+    overflow-wrap: anywhere;
+}
+
+.monokakido-settings .monokakido-default-dictionary,
+.monokakido-settings .monokakido-dictionary-url-setting {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.monokakido-settings .monokakido-default-dictionary .setting-item-control,
+.monokakido-settings .monokakido-default-dictionary input,
+.monokakido-settings .monokakido-dictionary-url-setting .setting-item-control,
+.monokakido-settings .monokakido-dictionary-url-setting input {
     width: 100%;
+    min-width: 0;
+}
+
+.monokakido-settings .monokakido-dictionaries-empty {
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
+}
+
+/* Keep backup actions below their description at every settings-window width. */
+.monokakido-settings .monokakido-dictionary-backup {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--size-4-3);
+}
+
+.monokakido-settings .monokakido-dictionary-backup .setting-item-info {
+    width: 100%;
+    margin-inline-end: 0;
+}
+
+.monokakido-settings .monokakido-dictionary-backup .setting-item-control {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--size-4-2);
+}
+
+.monokakido-settings .monokakido-dictionary-backup button {
+    max-width: 100%;
+    height: auto;
+    min-height: var(--input-height);
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.monokakido-dictionary-import .monokakido-dictionary-import-text {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: var(--font-monospace);
+}
+
+.monokakido-dictionary-import input[type="file"] {
+    max-width: 100%;
+}
+
+.monokakido-dictionary-import .setting-item-control {
+    flex-wrap: wrap;
 }

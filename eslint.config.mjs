@@ -18,7 +18,7 @@ export default defineConfig([
 			// Pinned Obsidian 1.8.7 types do not expose the 1.13 declarative API.
 			'obsidianmd/settings-tab/prefer-setting-definitions': 'off',
 			'obsidianmd/ui/sentence-case': ['warn', {
-				brands: ['Monokakido Copilot'],
+				brands: ['Monokakido Copilot', 'Google Form', 'X', '#DictCopilot'],
 				enforceCamelCaseLower: true,
 			}],
 		},

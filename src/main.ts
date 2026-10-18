@@ -1,4 +1,7 @@
 import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile,MarkdownFileInfo } from 'obsidian';
+import { DictionaryImportModal } from './ui/dictionary-import-modal';
+import type { DictionaryLinks } from './utils/dictionary-backup-utils';
+import { copyDictionaryLinks, exportDictionaryLinks } from './utils/dictionary-backup-utils';
 import { searchWordAtCursor, searchWordAtCursorInDialog, getContextAndIndex } from './utils/cursor-word-utils';
 
 /**
@@ -211,14 +214,14 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 
 		// 添加状态栏模式指示器（桌面端右下角，移动端同样可用）
 		this.statusBarItemEl = this.addStatusBarItem();
-		this.statusBarItemEl.setText(this.settings.searchMode === 'quick' ? 'Quick モード' : 'Dialog モード');
+		this.statusBarItemEl.setText(this.settings.searchMode === 'quick' ? 'クイック検索' : 'ダイアログ検索');
 		this.statusBarItemEl.addClass('mod-clickable');
-		this.statusBarItemEl.setAttr('aria-label', 'Toggle search mode');
+		this.statusBarItemEl.setAttr('aria-label', '検索モードを切り替え');
 		this.statusBarItemEl.onClickEvent(() => {
 			this.settings.searchMode = this.settings.searchMode === 'quick' ? 'dialog' : 'quick';
 			PLUGIN_SETTINGS.searchMode = this.settings.searchMode;
 			if (this.statusBarItemEl) {
-				this.statusBarItemEl.setText(this.settings.searchMode === 'quick' ? 'Quick モード' : 'Dialog モード');
+				this.statusBarItemEl.setText(this.settings.searchMode === 'quick' ? 'クイック検索' : 'ダイアログ検索');
 			}
 			void this.saveSettings().catch((err) => console.error('Failed to save settings:', err));
 		});
@@ -276,6 +279,16 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 		Object.assign(PLUGIN_SETTINGS, this.settings);
 	}
 
+	async importDictionaryLinks(links: DictionaryLinks, backupCurrent = false): Promise<void> {
+		if (backupCurrent) {
+			const path = await exportDictionaryLinks(this.settings, this.app.vault, new Date());
+			new Notice(`現在の辞書設定を保存しました: ${path}`);
+		}
+		await this.saveData({ ...this.settings, ...links });
+		Object.assign(this.settings, links);
+		Object.assign(PLUGIN_SETTINGS, links);
+	}
+
 	async saveSettings() {
 		await this.saveData(this.settings);
 		Object.assign(PLUGIN_SETTINGS, this.settings);
@@ -291,16 +304,27 @@ class SettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	private openDictionaryImport(mode: 'paste' | 'file'): void {
+		new DictionaryImportModal(this.app, mode, async (links, backupCurrent) => {
+			await this.plugin.importDictionaryLinks(links, backupCurrent);
+			this.display();
+		}).open();
+	}
+
 	display(): void {
 		const { containerEl } = this;
 
 		containerEl.empty();
+		containerEl.addClass('monokakido-settings');
+
+		new Setting(containerEl).setName('辞書の検索').setHeading();
 
 		new Setting(containerEl)
-			.setName('Custom dictionary URL scheme')
-			.setDesc('Dialog モードで「デフォルトの辞書」ボタンとして表示されます。')
+			.setClass('monokakido-default-dictionary')
+			.setName('デフォルトの辞書の URL')
+			.setDesc('検索に使う URL スキームです。<text_to_search> は検索語に置き換えられます。')
 			.addText(text => text
-				.setPlaceholder(PLUGIN_SETTINGS.dictURL)
+				.setPlaceholder('mkdictionaries:///?text=<text_to_search>')
 				.setValue(this.plugin.settings.dictURL)
 				.onChange(async (value) => {
 					this.plugin.settings.dictURL = value;
@@ -308,26 +332,29 @@ class SettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
-			.setName('モード切替')
-			.setDesc('Quick: ダブルプレスで直接検索。Dialog: オプション付きのダイアログを表示。')
+			.setName('検索モード')
+			.setDesc('クイック検索は辞書を直接開きます。ダイアログ検索は検索語や辞書を選んでから検索します。')
 			.addDropdown(dropdown =>
 				dropdown
-					.addOption('quick', 'Quick モード')
-					.addOption('dialog', 'Dialog モード')
+					.addOption('quick', 'クイック検索')
+					.addOption('dialog', 'ダイアログ検索')
 					.setValue(this.plugin.settings.searchMode)
 					.onChange(async (value) => {
-						const mode = value as 'quick' | 'dialog';
+						if (value !== 'quick' && value !== 'dialog') return;
+						const mode = value;
 						this.plugin.settings.searchMode = mode;
 						PLUGIN_SETTINGS.searchMode = mode;
 						if (this.plugin.statusBarItemEl) {
-							this.plugin.statusBarItemEl.setText(mode === 'quick' ? 'Quick モード' : 'Dialog モード');
+							this.plugin.statusBarItemEl.setText(mode === 'quick' ? 'クイック検索' : 'ダイアログ検索');
 						}
 						await this.plugin.saveSettings();
 					}));
 
+		new Setting(containerEl).setName('表示と操作').setHeading();
+
 		new Setting(containerEl)
-			.setName('コンパクトなダイアログ UI')
-			.setDesc('Dialog モードの説明ラベル（「もしかして：」「検索語：」「辞書を引く：」）を非表示にします。モバイル環境で画面を有効活用したい場合に推奨。')
+			.setName('ダイアログをコンパクトに表示')
+			.setDesc('ダイアログの説明ラベルを非表示にして、表示をすっきりさせます。モバイルや、画面の小さい端末におすすめです。')
 			.addToggle(toggle =>
 				toggle
 					.setValue(this.plugin.settings.compactDialogUI)
@@ -337,8 +364,8 @@ class SettingTab extends PluginSettingTab {
 					}));
 
 		new Setting(containerEl)
-			.setName('Enable double-click search')
-			.setDesc('Enable or disable search by double-pressing the alt key')
+			.setName('キーの連続押しで検索')
+			.setDesc('オプションキー（ウィンドウズではオルトキー）をすばやく２回押すと検索します。外付けキーボードでも利用できます。')
 			.addToggle(toggle =>
 				toggle
 					.setValue(this.plugin.settings.enableDoubleClickSearch)
@@ -347,58 +374,152 @@ class SettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					}));
 
-		// 允许用户自定义 Dialog 模式的辞书按钮
 		new Setting(containerEl)
-			.setName('Dialog モードの辞書ボタンを追加')
-			.setDesc('「デフォルトの辞書」（上記 URL）の後に表示される追加ボタンです。ラベルと URL スキーマを設定してください。')
+			.setName('ダイアログの追加辞書')
+			.setDesc('デフォルトの辞書の後に表示するボタンを設定します。URL の <text_to_search>・<文字列>・{w} は検索語に置き換えられます。')
 			.setHeading();
 
-		const categoriesContainer = containerEl.createDiv();
+		const categoriesContainer = containerEl.createDiv({ cls: 'monokakido-dictionaries' });
 
-		const renderCategories = () => {
+		const renderCategories = (focusIndex?: number) => {
 			categoriesContainer.empty();
 			const categories = this.plugin.settings.dialogDictCategories;
+			const labelInputs: HTMLInputElement[] = [];
+
+			if (categories.length === 0) {
+				categoriesContainer.createEl('p', {
+					cls: 'monokakido-dictionaries-empty',
+					text: '追加辞書はありません。「辞書を追加」から登録できます。',
+				});
+			}
 
 			categories.forEach((cat, index) => {
-				new Setting(categoriesContainer)
-					.addText(text => {
-						text.setValue(cat.label)
-							.setPlaceholder('ラベル（例: 国語）')
-							.onChange(async (value) => {
-								this.plugin.settings.dialogDictCategories[index].label = value;
-								await this.plugin.saveSettings();
-							});
-					})
-					.addText(text => {
-						text.setValue(cat.url)
-							.setPlaceholder('URL テンプレート（例: mkdictionaries:///?text=<text_to_search>&category=ja）')
-							.onChange(async (value) => {
-								this.plugin.settings.dialogDictCategories[index].url = value;
-								await this.plugin.saveSettings();
-							});
-						text.inputEl.addClass('monokakido-dictionary-url');
-					})
-					.addButton(btn => btn
-						.setButtonText('削除')
-						.setWarning()
+				const dictionaryContainer = categoriesContainer.createDiv();
+				new Setting(dictionaryContainer)
+					.setName(`追加辞書 ${index + 1}`)
+					.setHeading()
+					.addExtraButton(button => button
+						.setIcon('trash-2')
+						.setTooltip(`追加辞書 ${index + 1} を削除`)
 						.onClick(async () => {
-							this.plugin.settings.dialogDictCategories.splice(index, 1);
+							categories.splice(index, 1);
 							await this.plugin.saveSettings();
-							renderCategories();
+							renderCategories(Math.min(index, categories.length - 1));
 						}));
+
+				new Setting(dictionaryContainer)
+					.setName('ボタン名')
+					.addText(text => {
+						labelInputs.push(text.inputEl);
+						text.inputEl.setAttribute('aria-label', `追加辞書 ${index + 1} のボタン名`);
+						text.setValue(cat.label)
+							.setPlaceholder('例：国語')
+							.onChange(async (value) => {
+								cat.label = value;
+								await this.plugin.saveSettings();
+							});
+					});
+
+				new Setting(dictionaryContainer)
+					.setName('辞書の URL')
+					.setClass('monokakido-dictionary-url-setting')
+					.addText(text => {
+						text.inputEl.setAttribute('aria-label', `追加辞書 ${index + 1} の URL`);
+						text.setValue(cat.url)
+							.setPlaceholder('mkdictionaries:///?text=<text_to_search>')
+							.onChange(async (value) => {
+								cat.url = value;
+								await this.plugin.saveSettings();
+							});
+						text.inputEl.spellcheck = false;
+						text.inputEl.setAttribute('autocapitalize', 'off');
+					});
 			});
 
-			new Setting(categoriesContainer)
-				.addButton(btn => btn
-					.setButtonText('URL スキームを追加')
+			const actions = new Setting(categoriesContainer)
+				.setName('追加辞書を登録')
+				.setDesc('ダイアログに表示する辞書ボタンを追加します。');
+			actions.addButton(btn => {
+				btn.setButtonText('辞書を追加')
 					.setCta()
 					.onClick(async () => {
-						this.plugin.settings.dialogDictCategories.push({ label: '', url: '' });
+						categories.push({ label: '', url: '' });
 						await this.plugin.saveSettings();
-						renderCategories();
-					}));
+						renderCategories(categories.length - 1);
+					});
+				if (focusIndex !== undefined && !labelInputs[focusIndex]) btn.buttonEl.focus();
+			});
+			if (focusIndex !== undefined) labelInputs[focusIndex]?.focus();
 		};
 
 		renderCategories();
+
+		new Setting(containerEl)
+			.setClass('monokakido-dictionary-backup')
+			.setName('辞書リンクのバックアップ')
+			.setDesc('辞書の設定を JSON 形式でコピー、またはファイルに保存できます。保存先は保管庫のルートです。')
+			.addButton(button => button
+				.setButtonText('コピー')
+				.onClick(async () => {
+					try {
+						await copyDictionaryLinks(this.plugin.settings, containerEl.ownerDocument);
+						new Notice('辞書リンクをコピーしました。');
+					} catch (error: unknown) {
+						console.error('Failed to copy dictionary links:', error);
+						new Notice('コピーできませんでした。JSON のエクスポートをお試しください。');
+					}
+				}))
+			.addButton(button => button
+				.setButtonText('JSON をエクスポート')
+				.onClick(async () => {
+					button.setDisabled(true);
+					try {
+						const path = await exportDictionaryLinks(this.plugin.settings, this.app.vault);
+						new Notice(`辞書リンクを保存しました: ${path}`);
+					} catch (error: unknown) {
+						console.error('Failed to export dictionary links:', error);
+						new Notice('辞書リンクを保存できませんでした。保管庫への書き込み権限を確認してください。');
+					} finally {
+						button.setDisabled(false);
+					}
+				}));
+
+		new Setting(containerEl)
+			.setClass('monokakido-dictionary-backup')
+			.setName('辞書リンクのインポート')
+			.setDesc('JSON を貼り付けるか、バックアップファイルを選択して辞書の設定を復元します。現在の辞書設定は置き換えられます。')
+			.addButton(button => button
+				.setButtonText('貼り付けてインポート')
+				.onClick(() => this.openDictionaryImport('paste')))
+			.addButton(button => button
+				.setButtonText('ファイルからインポート')
+				.onClick(() => this.openDictionaryImport('file')));
+
+		new Setting(containerEl)
+			.setName('ヘルプとフィードバック')
+			.setHeading();
+
+		const faq = new Setting(containerEl)
+			.setName('よくある質問');
+		faq.descEl.createEl('a', {
+			text: 'FAQ を開く',
+			href: 'https://github.com/NoHeartPen/obsidian-monokakido-copilot-plugin/blob/master/docs/faq.ja.md',
+			attr: { target: '_blank', rel: 'noopener noreferrer' },
+		});
+
+		const feedback = new Setting(containerEl)
+			.setName('ご意見・ご要望');
+		feedback.descEl.createEl('a', {
+			text: 'Google Form',
+			href: 'https://forms.gle/cgTbndS7LUxBhney9',
+			attr: { target: '_blank', rel: 'noopener noreferrer' },
+		});
+		feedback.descEl.appendText(' からお送りください。X で');
+		feedback.descEl.createEl('a', {
+			text: 'ハッシュタグ「#DictCopilot」',
+			href: 'https://twitter.com/intent/tweet?hashtags=DictCopilot',
+			attr: { target: '_blank', rel: 'noopener noreferrer' },
+		});
+		feedback.descEl.appendText('を付け、ご意見やご要望を投稿していただくのも大歓迎です！');
 	}
 }
