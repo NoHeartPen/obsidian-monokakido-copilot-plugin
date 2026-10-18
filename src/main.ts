@@ -1,4 +1,6 @@
 import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile,MarkdownFileInfo } from 'obsidian';
+import { DictionaryImportModal } from './ui/dictionary-import-modal';
+import type { DictionaryLinks } from './utils/dictionary-backup-utils';
 import { copyDictionaryLinks, exportDictionaryLinks } from './utils/dictionary-backup-utils';
 import { searchWordAtCursor, searchWordAtCursorInDialog, getContextAndIndex } from './utils/cursor-word-utils';
 
@@ -277,6 +279,16 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 		Object.assign(PLUGIN_SETTINGS, this.settings);
 	}
 
+	async importDictionaryLinks(links: DictionaryLinks, backupCurrent = false): Promise<void> {
+		if (backupCurrent) {
+			const path = await exportDictionaryLinks(this.settings, this.app.vault, new Date());
+			new Notice(`現在の辞書設定を保存しました: ${path}`);
+		}
+		await this.saveData({ ...this.settings, ...links });
+		Object.assign(this.settings, links);
+		Object.assign(PLUGIN_SETTINGS, links);
+	}
+
 	async saveSettings() {
 		await this.saveData(this.settings);
 		Object.assign(PLUGIN_SETTINGS, this.settings);
@@ -290,6 +302,13 @@ class SettingTab extends PluginSettingTab {
 	constructor(app: App, plugin: MonokakidoCopilotPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+	}
+
+	private openDictionaryImport(mode: 'paste' | 'file'): void {
+		new DictionaryImportModal(this.app, mode, async (links, backupCurrent) => {
+			await this.plugin.importDictionaryLinks(links, backupCurrent);
+			this.display();
+		}).open();
 	}
 
 	display(): void {
@@ -464,6 +483,17 @@ class SettingTab extends PluginSettingTab {
 						button.setDisabled(false);
 					}
 				}));
+
+		new Setting(containerEl)
+			.setClass('monokakido-dictionary-backup')
+			.setName('辞書リンクのインポート')
+			.setDesc('JSON を貼り付けるか、バックアップファイルを選択して辞書の設定を復元します。現在の辞書設定は置き換えられます。')
+			.addButton(button => button
+				.setButtonText('貼り付けてインポート')
+				.onClick(() => this.openDictionaryImport('paste')))
+			.addButton(button => button
+				.setButtonText('ファイルからインポート')
+				.onClick(() => this.openDictionaryImport('file')));
 
 		new Setting(containerEl)
 			.setName('ヘルプとフィードバック')

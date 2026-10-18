@@ -1,6 +1,6 @@
 import type { Vault } from 'obsidian';
 
-interface DictionaryLinks {
+export interface DictionaryLinks {
 	dictURL: string;
 	dialogDictCategories: { label: string; url: string }[];
 }
@@ -25,9 +25,18 @@ export async function copyDictionaryLinks(settings: DictionaryLinks, ownerDocume
 export async function exportDictionaryLinks(
 	settings: DictionaryLinks,
 	vault: Pick<Vault, 'getAbstractFileByPath' | 'create'>,
+	autoBackupDate?: Date,
 ): Promise<string> {
 	const content = serializeDictionaryLinks(settings);
-	const baseName = 'monokakido-dictionaries';
+	let baseName = 'monokakido-dictionaries';
+	if (autoBackupDate) {
+		const year = autoBackupDate.getFullYear();
+		const month = String(autoBackupDate.getMonth() + 1).padStart(2, '0');
+		const day = String(autoBackupDate.getDate()).padStart(2, '0');
+		const hour = String(autoBackupDate.getHours()).padStart(2, '0');
+		const minute = String(autoBackupDate.getMinutes()).padStart(2, '0');
+		baseName += `-auto-backup-${year}-${month}-${day}-${hour}-${minute}`;
+	}
 	let path = `${baseName}.json`;
 	let suffix = 1;
 	while (vault.getAbstractFileByPath(path)) {
@@ -35,4 +44,41 @@ export async function exportDictionaryLinks(
 	}
 	await vault.create(path, content);
 	return path;
+}
+
+export class DictionaryBackupError extends Error {}
+
+/** Validate the entire backup before returning only the dictionary settings. */
+export function parseDictionaryLinks(text: string): DictionaryLinks {
+	let data: unknown;
+	try {
+		data = JSON.parse(text.replace(/^\uFEFF/, ''));
+	} catch {
+		throw new DictionaryBackupError('JSON の形式が正しくありません。');
+	}
+	if (typeof data !== 'object' || data === null
+		|| !('format' in data) || data.format !== 'monokakido-copilot-dictionaries') {
+		throw new DictionaryBackupError('辞書リンクのバックアップファイルではありません。');
+	}
+	if (!('version' in data) || data.version !== 1) {
+		throw new DictionaryBackupError('このバックアップのバージョンには対応していません。');
+	}
+	if (!('dictURL' in data) || typeof data.dictURL !== 'string'
+		|| !('dialogDictCategories' in data) || !Array.isArray(data.dialogDictCategories)) {
+		throw new DictionaryBackupError('辞書の設定が正しくありません。');
+	}
+	const categories: unknown[] = data.dialogDictCategories;
+	const dialogDictCategories = categories.map(category => {
+		if (typeof category !== 'object' || category === null
+			|| !('label' in category) || typeof category.label !== 'string'
+			|| !('url' in category) || typeof category.url !== 'string') {
+			throw new DictionaryBackupError('追加辞書の名前または URL が正しくありません。');
+		}
+		return { label: category.label, url: category.url };
+	});
+	return { dictURL: data.dictURL, dialogDictCategories };
+}
+
+export async function readDictionaryBackupFile(file: Pick<File, 'text'>): Promise<DictionaryLinks> {
+	return parseDictionaryLinks(await file.text());
 }

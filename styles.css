@@ -98,3 +98,18 @@
     white-space: normal;
     overflow-wrap: anywhere;
 }
+
+.monokakido-dictionary-import .monokakido-dictionary-import-text {
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    font-family: var(--font-monospace);
+}
+
+.monokakido-dictionary-import input[type="file"] {
+    max-width: 100%;
+}
+
+.monokakido-dictionary-import .setting-item-control {
+    flex-wrap: wrap;
+}
