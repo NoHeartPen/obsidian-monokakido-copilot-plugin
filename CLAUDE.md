@@ -2,15 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Follow the mandatory development checks in [AGENTS.md](AGENTS.md).
+
 ## Build & Development
 
 ```bash
 npm run dev          # Watch mode — rebuilds main.js on every save
+npm run lint:fix     # Apply supported ESLint fixes; resolve remaining diagnostics
+npm run check        # Required before delivery: zero-warning lint, type-check, production build
 npm run build        # Production build — runs tsc type-check first, then esbuild minified bundle
 npm run version      # Bump version: reads $npm_package_version, writes manifest.json + versions.json, stages both
 ```
 
-There is no test suite. The build output `main.js` is committed to the repo (standard Obsidian plugin convention).
+Run `npm test` for the Node.js utility test suite in `tests/`; `npm run check` includes these tests. The build output `main.js` is ignored and uploaded with `manifest.json` and `styles.css` to releases.
 
 ## Architecture
 

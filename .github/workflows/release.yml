@@ -11,17 +11,18 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: "18.x"
+          node-version: '24'
+          cache: npm
 
-      - name: Build plugin
+      - name: Check and build plugin
         run: |
-          npm install
-          npm run build
+          npm ci
+          npm run check
 
       - name: Create release
         env:
@@ -32,4 +33,4 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            main.js manifest.json
+            main.js manifest.json styles.css

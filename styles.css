@@ -1,0 +1,49 @@
+/* Keep lookup dialog rules scoped and preserve the original inline values. */
+.modal.monokakido-search-dialog .monokakido-full-width {
+    width: 100%;
+}
+
+.modal.monokakido-search-dialog .monokakido-border-box {
+    box-sizing: border-box;
+}
+
+.modal.monokakido-search-dialog .monokakido-hidden {
+    display: none;
+}
+
+.modal.monokakido-search-dialog .monokakido-flex {
+    display: flex;
+}
+
+.modal.monokakido-search-dialog .monokakido-wrap {
+    flex-wrap: wrap;
+}
+
+.modal.monokakido-search-dialog .monokakido-center {
+    text-align: center;
+}
+
+.modal.monokakido-search-dialog .monokakido-nowrap {
+    white-space: nowrap;
+}
+
+.modal.monokakido-search-dialog .monokakido-content-width {
+    flex: 0 0 auto;
+}
+
+.modal.monokakido-search-dialog .monokakido-max-width {
+    max-width: 100%;
+}
+
+.modal.monokakido-search-dialog .monokakido-min-width {
+    min-width: 0;
+}
+
+.modal.monokakido-search-dialog .monokakido-align-end {
+    justify-content: flex-end;
+}
+
+/* Preserve the custom dictionary URL field's existing full width. */
+.setting-item-control input.monokakido-dictionary-url {
+    width: 100%;
+}

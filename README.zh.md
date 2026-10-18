@@ -59,3 +59,13 @@
 ## 免责声明
 
 本插件与 [MONOKAKIDO Co. Ltd. (JAPAN)](https://www.monokakido.jp/en/about.html) 无任何关联。Monokakido 商标归 [MONOKAKIDO Co. Ltd. (JAPAN)](https://www.monokakido.jp/en/about.html) 所有。
+
+## 开发测试
+
+使用 Node.js 24，通过 `npm ci` 安装锁定版本的依赖。
+
+- `npm test`：运行工具函数的自动化测试。
+- `npm test -- --test-name-pattern="Japanese"`：按测试名称筛选。
+- `npm run check`：依次执行零警告 lint、测试、TypeScript 检查和生产构建。GitHub Actions 会在推送、拉取请求和发布时执行此命令。
+
+测试使用 Node 内置测试运行器和项目已有的 esbuild，执行真实 TypeScript 工具函数，并模拟 Obsidian API、设置、网络及剪贴板，无需启动 Obsidian 或连接真实服务。覆盖光标取词、分析请求处理、辞典 URL 和历史记录写入。对话框布局、快捷键和真实笔记库行为仍需在 Obsidian 中检查。

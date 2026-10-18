@@ -61,3 +61,13 @@ Contributions via bug reports, feature requests and pull requests are welcome
 ## Disclaimer
 
 This plugin is not affiliated with [MONOKAKIDO Co. Ltd. (JAPAN)](https://www.monokakido.jp/en/about.html). The Monokakido trademark is the property of [MONOKAKIDO Co. Ltd. (JAPAN)](https://www.monokakido.jp/en/about.html).
+
+## Development tests
+
+Use Node.js 24 and install the locked dependencies with `npm ci`.
+
+- `npm test`: run the automated utility tests.
+- `npm test -- --test-name-pattern="Japanese"`: filter tests by name.
+- `npm run check`: run zero-warning lint, tests, TypeScript checking and the production build. GitHub Actions runs this for pushes, pull requests and releases.
+
+The tests use Node's built-in test runner and the existing esbuild dependency. They exercise the real TypeScript utilities with mocked Obsidian APIs, settings, network and clipboard boundaries; no running Obsidian instance or live service is needed. Coverage includes cursor word extraction, analysis request handling, dictionary URLs and history writes. Dialog layout, keyboard shortcuts and real vault behavior still require checks inside Obsidian.

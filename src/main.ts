@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile,MarkdownFileInfo } from 'obsidian';
 import { searchWordAtCursor, searchWordAtCursorInDialog, getContextAndIndex } from './utils/cursor-word-utils';
 
 /**
@@ -11,7 +11,7 @@ const isDebug = false;
  */
 export function debugLog(...args: string[]) {
 	if (isDebug) {
-		console.log(...args);
+		console.debug(...args);
 	}
 }
 
@@ -100,10 +100,10 @@ export const PLUGIN_SETTINGS: PluginSettingsInterface = {
 }
 
 export default class MonokakidoCopilotPlugin extends Plugin {
-	settings: PluginSettingsInterface;
+	settings!: PluginSettingsInterface;
 
 	private lastKeyupTime = 0;
-	private lastKeyWasDouble: boolean
+	private lastKeyWasDouble = false;
 
 	/** 状态栏模式指示器元素（public: SettingTab 需要访问以更新文本） */
 	statusBarItemEl: HTMLElement | null = null;
@@ -117,9 +117,9 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	 * 监听键盘按键弹起事件，启用时调用 searchOnDoublePress 处理双击搜索逻辑
 	 * @param event 键盘事件
 	 */
-	private onKeyUpHandler = (event: KeyboardEvent) => {
+	private readonly onKeyUpHandler = (event: KeyboardEvent) => {
 		if (!this.settings.enableDoubleClickSearch) return;
-		this.searchOnDoublePress(event);
+		void this.searchOnDoublePress(event).catch(error => console.error('Search failed:', error));
 	};
 
 
@@ -127,7 +127,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	 * 监听键盘按键按下事件，启用时调用 clearTimerOnDoublePress 清理双击定时器
 	 * @param event 键盘事件
 	 */
-	private onKeyDownHandler = (event: KeyboardEvent) => {
+	private readonly onKeyDownHandler = (event: KeyboardEvent) => {
 		if (!this.settings.enableDoubleClickSearch) return;
 		this.clearTimerOnDoublePress(event);
 	};
@@ -161,12 +161,12 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 
 		if (this.settings.searchMode === 'dialog') {
 			// Dialog 模式: 直接弹起窗口模式对话框
-			await searchWordAtCursorInDialog();
+			await searchWordAtCursorInDialog(this.app);
 			return;
 		}
 
 		// Quick 模式: 检测是否为同一上下文的第二次双击
-		const current = getContextAndIndex();
+		const current = getContextAndIndex(this.app);
 
 		if (current && current.context !== ''
 			&& this.lastSearchContext === current.context
@@ -174,7 +174,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			// 同一上下文双击两次 → 自动切换到 Dialog 模式
 			this.lastSearchContext = null;
 			this.lastSearchCursorIndex = null;
-			await searchWordAtCursorInDialog();
+			await searchWordAtCursorInDialog(this.app);
 			return;
 		}
 
@@ -183,7 +183,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			this.lastSearchContext = current.context;
 			this.lastSearchCursorIndex = current.cursorIndex;
 		}
-		await searchWordAtCursor();
+		await searchWordAtCursor(this.app);
 	}
 
 	/**
@@ -199,12 +199,12 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		if (this.settings.enableDoubleClickSearch) {
-			this.registerDomEvent(window, 'keyup', this.onKeyUpHandler);
-			this.registerDomEvent(window, 'keydown', this.onKeyDownHandler);
+			this.registerDomEvent(this.app.workspace.containerEl.ownerDocument, 'keyup', this.onKeyUpHandler);
+			this.registerDomEvent(this.app.workspace.containerEl.ownerDocument, 'keydown', this.onKeyDownHandler);
 		}
 
 		this.addRibbonIcon('file-clock', 'Monokakido Copilot history', () => {
-			this.openHistoryFile();
+			void this.openHistoryFile().catch(error => console.error('Opening history failed:', error));
 		});
 
 		this.registerCommands();
@@ -232,46 +232,47 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 			id: 'open-history',
 			name: '単語メモ帳を開く',
 			callback: () => {
-				this.openHistoryFile();
+				void this.openHistoryFile().catch(error => console.error('Opening history failed:', error));
 			},
 		});
 
 		this.addCommand({
 			id: 'search-cursor-word',
 			name: 'カーソルの単語を検索',
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				await searchWordAtCursor();
+			editorCallback: async (editor: Editor, view: MarkdownView | MarkdownFileInfo) => {
+				await searchWordAtCursor(this.app);
 			},
 		});
 
 		this.addCommand({
 			id: 'search-cursor-word-dialog',
 			name: 'Dialog モードでカーソルの単語を検索',
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				await searchWordAtCursorInDialog();
+			editorCallback: async (editor: Editor, view: MarkdownView | MarkdownFileInfo) => {
+				await searchWordAtCursorInDialog(this.app);
 			},
 		});
 	}
 
-	private openHistoryFile() {
+	private async openHistoryFile() {
 		const vault = this.app.vault;
 		const filePath = PLUGIN_SETTINGS.historyFilePath;
 		const file = vault.getFileByPath(filePath);
 		if (file instanceof TFile) {
-			this.app.workspace.openLinkText(filePath, '', true);
+			await this.app.workspace.openLinkText(filePath, '', true);
 		} else {
 			// FIXME 封装，因为有可能在写入笔记时文件又被删除了
-			vault.create(
+			await vault.create(
 				filePath,
 				'# MonoKakido Copilot history\n\nThis document is used for history.'
 			);
 			new Notice(`単語メモ帳は: ${filePath}`);
-			this.app.workspace.openLinkText(filePath, '', true);
+			await this.app.workspace.openLinkText(filePath, '', true);
 		}
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign({}, PLUGIN_SETTINGS, await this.loadData());
+		const data: unknown = await this.loadData();
+		this.settings = { ...PLUGIN_SETTINGS, ...(typeof data === 'object' && data !== null ? data : {}) };
 		Object.assign(PLUGIN_SETTINGS, this.settings);
 	}
 
@@ -349,7 +350,7 @@ class SettingTab extends PluginSettingTab {
 		// 允许用户自定义 Dialog 模式的辞书按钮
 		new Setting(containerEl)
 			.setName('Dialog モードの辞書ボタンを追加')
-			.setDesc('「デフォルトの辞書」（上記 dictURL）の後に表示される追加ボタンです。ラベルと URL スキーマを設定してください。')
+			.setDesc('「デフォルトの辞書」（上記 URL）の後に表示される追加ボタンです。ラベルと URL スキーマを設定してください。')
 			.setHeading();
 
 		const categoriesContainer = containerEl.createDiv();
@@ -375,7 +376,7 @@ class SettingTab extends PluginSettingTab {
 								this.plugin.settings.dialogDictCategories[index].url = value;
 								await this.plugin.saveSettings();
 							});
-						text.inputEl.style.width = '100%';
+						text.inputEl.addClass('monokakido-dictionary-url');
 					})
 					.addButton(btn => btn
 						.setButtonText('削除')

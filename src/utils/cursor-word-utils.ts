@@ -8,14 +8,14 @@ import { openDialogMode } from './dialog-mode-utils';
 /**
  * 搜索光标附近的单词
  */
-export async function searchWordAtCursor() {
+export async function searchWordAtCursor(app: App) {
     new Notice('分析中、少々お待ちください。');
     try {
-        const cursorWord = await getCursorWord();
+        const cursorWord = await getCursorWord(app);
         if (!cursorWord) {
             return;
         }
-        doSearch(cursorWord);
+        await doSearch(cursorWord);
     } catch (error) {
         console.error('Error getting cursor word:', error);
     }
@@ -24,9 +24,9 @@ export async function searchWordAtCursor() {
 /**
  * 在 Dialog 模式中搜索光标附近的单词
  */
-export async function searchWordAtCursorInDialog() {
+export async function searchWordAtCursorInDialog(app: App) {
     try {
-        const result = getContextAndIndex();
+        const result = getContextAndIndex(app);
         if (!result) {
             new Notice("あれ？何も入力されていないのよ");
             return;
@@ -42,7 +42,6 @@ export async function searchWordAtCursorInDialog() {
         // 获取光标附近的原始文本（未经分析处理，用作候选词第4个）
         const rawWord = getRawCursorWord(context, cursorIndex);
 
-        const app = (window as any).app;
         openDialogMode(app, { context, searchWord: word, cursorIndex, rawWord });
     } catch (error) {
         console.error('Error getting cursor word:', error);
@@ -75,8 +74,7 @@ export async function doSearch(word: string) {
  *  - context {string} 当前光标所在行的文本内容
  *  - cursorIndex {number} 当前光标在该行内的字符索引（从0开始）
  */
-export function getContextAndIndex(): { context: string; cursorIndex: number; } | null {
-    const app = (window as any).app;
+export function getContextAndIndex(app: App): { context: string; cursorIndex: number; } | null {
     const view = app.workspace.getActiveViewOfType(MarkdownView);
     if (!view) {
         console.error('No active MarkdownView found.');
@@ -109,8 +107,8 @@ export function getContextAndIndex(): { context: string; cursorIndex: number; } 
  * 通过上下文和光标索引获取光标附近的单词的辞书形
  * 并将上下文和单词保存到历史记录
  */
-export async function getCursorWord(): Promise<string | undefined> {
-    const result = getContextAndIndex();
+export async function getCursorWord(app: App): Promise<string | undefined> {
+    const result = getContextAndIndex(app);
     const context = result?.context ?? "";
 
     if (!context) {
@@ -124,8 +122,7 @@ export async function getCursorWord(): Promise<string | undefined> {
     const word = await analyzeCursorWord(context, cursorIndex);
     debugLog(`cursorWord: ${word}`);
     if (word !== undefined) {
-        const app: App = (window as any).app;
-        writeToHistory(app, PLUGIN_SETTINGS.historyFilePath, context, word);
+        await writeToHistory(app, PLUGIN_SETTINGS.historyFilePath, context, word);
     }
     return word;
 }
