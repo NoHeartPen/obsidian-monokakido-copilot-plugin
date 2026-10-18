@@ -1,23 +1,47 @@
+/* Keep lookup dialog rules scoped and preserve the original inline values. */
+.modal.monokakido-search-dialog .monokakido-full-width {
+    width: 100%;
+}
 
-/* Monokakido controls and dialog layout. */
-.monokakido-full-width { width: 100%; }
-.monokakido-border-box { box-sizing: border-box; }
-.monokakido-hidden { display: none; }
-.monokakido-flex { display: flex; }
-.monokakido-wrap { flex-wrap: wrap; }
-.monokakido-center { text-align: center; }
-.monokakido-nowrap { white-space: nowrap; }
-.monokakido-content-width { flex: 0 0 auto; }
-.monokakido-max-width { max-width: 100%; }
-.monokakido-min-width { min-width: 0; }
-.monokakido-align-end { justify-content: flex-end; }
-.monokakido-dialog .monokakido-measured-width { flex: 0 0 var(--monokakido-button-width); }
-.monokakido-dialog .monokakido-textarea { padding: var(--size-4-2); }
-.monokakido-dialog .monokakido-candidates { gap: var(--size-2-3); }
-.monokakido-dialog .monokakido-actions { gap: var(--size-4-2); margin-top: var(--size-4-4); }
-.is-mobile .monokakido-dialog .monokakido-textarea { padding: var(--size-2-3) var(--size-4-2); }
-.is-mobile .monokakido-dialog .monokakido-candidates { gap: var(--size-4-1); }
-.is-mobile .monokakido-dialog .monokakido-actions { gap: var(--size-2-3); margin-top: var(--size-4-2); }
+.modal.monokakido-search-dialog .monokakido-border-box {
+    box-sizing: border-box;
+}
+
+.modal.monokakido-search-dialog .monokakido-hidden {
+    display: none;
+}
+
+.modal.monokakido-search-dialog .monokakido-flex {
+    display: flex;
+}
+
+.modal.monokakido-search-dialog .monokakido-wrap {
+    flex-wrap: wrap;
+}
+
+.modal.monokakido-search-dialog .monokakido-center {
+    text-align: center;
+}
+
+.modal.monokakido-search-dialog .monokakido-nowrap {
+    white-space: nowrap;
+}
+
+.modal.monokakido-search-dialog .monokakido-content-width {
+    flex: 0 0 auto;
+}
+
+.modal.monokakido-search-dialog .monokakido-max-width {
+    max-width: 100%;
+}
+
+.modal.monokakido-search-dialog .monokakido-min-width {
+    min-width: 0;
+}
+
+.modal.monokakido-search-dialog .monokakido-align-end {
+    justify-content: flex-end;
+}
 
 /* Preserve the custom dictionary URL field's existing full width. */
 .setting-item-control input.monokakido-dictionary-url {

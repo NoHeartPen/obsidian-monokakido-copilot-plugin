@@ -74,6 +74,7 @@ class SearchDialog extends Modal {
 
 	constructor(app: App, data: DialogWordData) {
 		super(app);
+		this.modalEl.addClass('monokakido-search-dialog');
 		// The global helper creates a detached canvas; adopt it into the modal document.
 		this.buttonMeasureCanvas = this.modalEl.ownerDocument.adoptNode(createEl('canvas'));
 		this.data = data;
@@ -160,15 +161,15 @@ class SearchDialog extends Modal {
 					.setPlaceholder('何か入力してみましょう');
 				ta.inputEl.readOnly = false;
 				ta.inputEl.rows = rows;
-				ta.inputEl.style.width = '100%';
-				ta.inputEl.style.boxSizing = 'border-box';
+				ta.inputEl.addClass('monokakido-full-width');
+				ta.inputEl.addClass('monokakido-border-box');
 				ta.inputEl.style.padding = this.isMobile() ? '6px 8px' : '8px';
 				this.contextTextArea = ta.inputEl;
 			});
 
 		// 隐藏空的 infoEl，让 controlEl 填满整行宽度
-		setting.infoEl.style.display = 'none';
-		setting.controlEl.style.width = '100%';
+		setting.infoEl.addClass('monokakido-hidden');
+		setting.controlEl.addClass('monokakido-full-width');
 
 		// 光标移动监听：点击 或 方向键/导航键 → 分析光标处单词
 		const handleCursorMove = () => {
@@ -225,10 +226,10 @@ class SearchDialog extends Modal {
 		const setting = new Setting(container)
 			.setName(this.showLabels() ? 'もしかして：' : '');
 		if (!this.showLabels()) {
-			setting.infoEl.style.display = 'none';
+			setting.infoEl.addClass('monokakido-hidden');
 		}
 		if (this.isMobile()) {
-			setting.controlEl.style.width = '100%';
+			setting.controlEl.addClass('monokakido-full-width');
 		}
 		this.candidateContainer = setting.controlEl.createDiv();
 		this.renderCandidates();
@@ -241,8 +242,8 @@ class SearchDialog extends Modal {
 	private renderCandidates() {
 		this.candidateContainer.empty();
 		// 移动端使用更紧凑的布局
-		this.candidateContainer.style.display = 'flex';
-		this.candidateContainer.style.flexWrap = 'wrap';
+		this.candidateContainer.addClass('monokakido-flex');
+		this.candidateContainer.addClass('monokakido-wrap');
 		this.candidateContainer.style.gap = this.isMobile() ? '4px' : '6px';
 
 		this.candidates.forEach((candidate) => {
@@ -274,11 +275,11 @@ class SearchDialog extends Modal {
 		const context = this.buttonMeasureCanvas.getContext('2d');
 		if (!computed) return;
 
-		el.style.textAlign = 'center';
-		el.style.whiteSpace = 'nowrap';
+		el.addClass('monokakido-center');
+		el.addClass('monokakido-nowrap');
 
 		if (!context) {
-			el.style.flex = '0 0 auto';
+			el.addClass('monokakido-content-width');
 			return;
 		}
 
@@ -290,7 +291,7 @@ class SearchDialog extends Modal {
 		const requiredWidth = Math.ceil(textWidth + horizontalPadding + horizontalBorder + 2);
 
 		el.style.flex = `0 0 ${requiredWidth}px`;
-		el.style.maxWidth = '100%';
+		el.addClass('monokakido-max-width');
 	}
 
 	/**
@@ -309,14 +310,14 @@ class SearchDialog extends Modal {
 						this.searchWord = value;
 						this.renderDictButtons();
 					});
-				tc.inputEl.style.width = '100%';
+				tc.inputEl.addClass('monokakido-full-width');
 
 			});
 		if (!this.showLabels()) {
-			setting.infoEl.style.display = 'none';
+			setting.infoEl.addClass('monokakido-hidden');
 		}
 		if (this.isMobile()) {
-			setting.controlEl.style.width = '100%';
+			setting.controlEl.addClass('monokakido-full-width');
 		}
 	}
 
@@ -327,17 +328,17 @@ class SearchDialog extends Modal {
 		const setting = new Setting(container)
 			.setName(this.showLabels() ? '辞書を引く：' : '');
 		// 移动端按钮换行显示，桌面端按钮在一行显示
-		setting.controlEl.style.flexWrap = 'wrap';
-		setting.controlEl.style.minWidth = '0';
+		setting.controlEl.addClass('monokakido-wrap');
+		setting.controlEl.addClass('monokakido-min-width');
 		if (!this.showLabels()) {
-			setting.infoEl.style.display = 'none';
+			setting.infoEl.addClass('monokakido-hidden');
 		}
 		if (this.isMobile()) {
-			setting.controlEl.style.width = '100%';
+			setting.controlEl.addClass('monokakido-full-width');
 		}
 		this.dictButtonContainer = setting.controlEl.createDiv();
-		this.dictButtonContainer.style.width = '100%';
-		this.dictButtonContainer.style.minWidth = '0';
+		this.dictButtonContainer.addClass('monokakido-full-width');
+		this.dictButtonContainer.addClass('monokakido-min-width');
 		this.renderDictButtons();
 	}
 
@@ -348,11 +349,11 @@ class SearchDialog extends Modal {
 	 */
 	private renderDictButtons() {
 		this.dictButtonContainer.empty();
-		this.dictButtonContainer.style.display = 'flex';
-		this.dictButtonContainer.style.flexWrap = 'wrap';
+		this.dictButtonContainer.addClass('monokakido-flex');
+		this.dictButtonContainer.addClass('monokakido-wrap');
 		this.dictButtonContainer.style.gap = this.isMobile() ? '4px' : '6px';
 		// 辞典按钮统一右对齐，便于移动端单手（右手）操作
-		this.dictButtonContainer.style.justifyContent = 'flex-end';
+		this.dictButtonContainer.addClass('monokakido-align-end');
 
 		if (!this.searchWord) {
 			this.dictButtonContainer.createSpan({ text: '検索語がありません' });
@@ -372,7 +373,7 @@ class SearchDialog extends Modal {
 			this.applyMobileButtonContentWidth(defaultBtn);
 		} else {
 			// 桌面端: 按钮宽度按内容自适应，不撑开
-			defaultBtn.buttonEl.style.flex = '0 0 auto';
+			defaultBtn.buttonEl.addClass('monokakido-content-width');
 		}
 
 		// 后续按钮: 用户自定义的辞典
@@ -389,7 +390,7 @@ class SearchDialog extends Modal {
 				this.applyMobileButtonContentWidth(btn);
 			} else {
 				// 桌面端: 按钮宽度按内容自适应，不撑开
-				btn.buttonEl.style.flex = '0 0 auto';
+				btn.buttonEl.addClass('monokakido-content-width');
 			}
 		});
 	}
@@ -406,15 +407,15 @@ class SearchDialog extends Modal {
 			.addTextArea(ta => {
 				ta.setPlaceholder('ここで何かをメモしましょう');
 				ta.inputEl.rows = 3;
-				ta.inputEl.style.width = '100%';
-				ta.inputEl.style.boxSizing = 'border-box';
+				ta.inputEl.addClass('monokakido-full-width');
+				ta.inputEl.addClass('monokakido-border-box');
 				ta.inputEl.style.padding = this.isMobile() ? '6px 8px' : '8px';
 				this.memoTextArea = ta.inputEl;
 			});
 
 		// 隐藏空的 infoEl，让 controlEl 填满整行宽度
-		setting.infoEl.style.display = 'none';
-		setting.controlEl.style.width = '100%';
+		setting.infoEl.addClass('monokakido-hidden');
+		setting.controlEl.addClass('monokakido-full-width');
 	}
 
 	/**
@@ -423,9 +424,9 @@ class SearchDialog extends Modal {
 	 */
 	private buildActionButtons(container: HTMLElement) {
 		const btnContainer = container.createDiv();
-		btnContainer.style.display = 'flex';
+		btnContainer.addClass('monokakido-flex');
 		btnContainer.style.gap = this.isMobile() ? '6px' : '8px';
-		btnContainer.style.justifyContent = 'flex-end';
+		btnContainer.addClass('monokakido-align-end');
 		btnContainer.style.marginTop = this.isMobile() ? '8px' : '16px';
 
 		// 暂时无法修复输入法遮挡「メモ」文本域的问题，所以
