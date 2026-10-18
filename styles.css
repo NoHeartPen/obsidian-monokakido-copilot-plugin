@@ -43,7 +43,31 @@
     justify-content: flex-end;
 }
 
-/* Preserve the custom dictionary URL field's existing full width. */
-.setting-item-control input.monokakido-dictionary-url {
+/* Keep native Setting / TextComponent structure and mobile control styling. */
+.monokakido-settings .setting-item-info,
+.monokakido-settings .setting-item-control {
+    min-width: 0;
+}
+
+.monokakido-settings .setting-item-description {
+    overflow-wrap: anywhere;
+}
+
+.monokakido-settings .monokakido-default-dictionary,
+.monokakido-settings .monokakido-dictionary-url-setting {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.monokakido-settings .monokakido-default-dictionary .setting-item-control,
+.monokakido-settings .monokakido-default-dictionary input,
+.monokakido-settings .monokakido-dictionary-url-setting .setting-item-control,
+.monokakido-settings .monokakido-dictionary-url-setting input {
     width: 100%;
+    min-width: 0;
+}
+
+.monokakido-settings .monokakido-dictionaries-empty {
+    color: var(--text-muted);
+    font-size: var(--font-ui-small);
 }
