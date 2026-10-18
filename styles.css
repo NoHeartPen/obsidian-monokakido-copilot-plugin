@@ -18,3 +18,8 @@
 .is-mobile .monokakido-dialog .monokakido-textarea { padding: var(--size-2-3) var(--size-4-2); }
 .is-mobile .monokakido-dialog .monokakido-candidates { gap: var(--size-4-1); }
 .is-mobile .monokakido-dialog .monokakido-actions { gap: var(--size-2-3); margin-top: var(--size-4-2); }
+
+/* Preserve the custom dictionary URL field's existing full width. */
+.setting-item-control input.monokakido-dictionary-url {
+    width: 100%;
+}

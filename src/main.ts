@@ -376,7 +376,7 @@ class SettingTab extends PluginSettingTab {
 								this.plugin.settings.dialogDictCategories[index].url = value;
 								await this.plugin.saveSettings();
 							});
-						text.inputEl.style.width = '100%';
+						text.inputEl.addClass('monokakido-dictionary-url');
 					})
 					.addButton(btn => btn
 						.setButtonText('削除')
