@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting, TFile,MarkdownFileInfo } from 'obsidian';
 import { searchWordAtCursor, searchWordAtCursorInDialog, getContextAndIndex } from './utils/cursor-word-utils';
 
 /**
@@ -239,7 +239,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 		this.addCommand({
 			id: 'search-cursor-word',
 			name: 'カーソルの単語を検索',
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor, view: MarkdownView | MarkdownFileInfo) => {
 				await searchWordAtCursor(this.app);
 			},
 		});
@@ -247,7 +247,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 		this.addCommand({
 			id: 'search-cursor-word-dialog',
 			name: 'Dialog モードでカーソルの単語を検索',
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor, view: MarkdownView | MarkdownFileInfo) => {
 				await searchWordAtCursorInDialog(this.app);
 			},
 		});
