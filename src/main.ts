@@ -100,10 +100,10 @@ export const PLUGIN_SETTINGS: PluginSettingsInterface = {
 }
 
 export default class MonokakidoCopilotPlugin extends Plugin {
-	settings: PluginSettingsInterface;
+	settings!: PluginSettingsInterface;
 
 	private lastKeyupTime = 0;
-	private lastKeyWasDouble: boolean
+	private lastKeyWasDouble = false;
 
 	/** 状态栏模式指示器元素（public: SettingTab 需要访问以更新文本） */
 	statusBarItemEl: HTMLElement | null = null;
@@ -117,7 +117,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	 * 监听键盘按键弹起事件，启用时调用 searchOnDoublePress 处理双击搜索逻辑
 	 * @param event 键盘事件
 	 */
-	private onKeyUpHandler = (event: KeyboardEvent) => {
+	private readonly onKeyUpHandler = (event: KeyboardEvent) => {
 		if (!this.settings.enableDoubleClickSearch) return;
 		void this.searchOnDoublePress(event).catch(error => console.error('Search failed:', error));
 	};
@@ -127,7 +127,7 @@ export default class MonokakidoCopilotPlugin extends Plugin {
 	 * 监听键盘按键按下事件，启用时调用 clearTimerOnDoublePress 清理双击定时器
 	 * @param event 键盘事件
 	 */
-	private onKeyDownHandler = (event: KeyboardEvent) => {
+	private readonly onKeyDownHandler = (event: KeyboardEvent) => {
 		if (!this.settings.enableDoubleClickSearch) return;
 		this.clearTimerOnDoublePress(event);
 	};
