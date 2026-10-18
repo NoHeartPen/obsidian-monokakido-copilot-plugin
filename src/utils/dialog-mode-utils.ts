@@ -74,8 +74,8 @@ class SearchDialog extends Modal {
 
 	constructor(app: App, data: DialogWordData) {
 		super(app);
-		// Measurement needs a detached canvas; Node.createEl() appends to its receiver.
-		this.buttonMeasureCanvas = this.modalEl.ownerDocument.createElement('canvas');
+		// The global helper creates a detached canvas; adopt it into the modal document.
+		this.buttonMeasureCanvas = this.modalEl.ownerDocument.adoptNode(createEl('canvas'));
 		this.data = data;
 		this.searchWord = data.searchWord;  // 默认选择第一个候选词（API 分析结果）
 		this.candidates = this.buildCandidates(data);

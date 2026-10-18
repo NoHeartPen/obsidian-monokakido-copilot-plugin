@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { setImmediate } from 'node:timers/promises';
 import { test } from 'node:test';
-import { loadUtility } from './helpers/load-utility.mjs';
+import { loadUtility, replaceGlobal } from './helpers/load-utility.mjs';
 
 const { openDialogMode, boundary, Platform } = await loadUtility('dialog-mode-utils');
 
@@ -17,8 +17,10 @@ function createDialog(t) {
 		createEl: t.mock.fn(() => {
 			throw new Error('HierarchyRequestError: only one element on document allowed');
 		}),
-		createElement: t.mock.fn(() => ({ ownerDocument, parentNode: null })),
+		createElement: t.mock.fn(() => { throw new Error('Use the detached DOM helper'); }),
+		adoptNode: t.mock.fn(node => { node.ownerDocument = ownerDocument; return node; }),
 	};
+	replaceGlobal(t, 'createEl', t.mock.fn(tag => ({ tagName: tag.toUpperCase(), ownerDocument: {}, parentNode: null })));
 	const app = { workspace: { containerEl: { ownerDocument }, getMostRecentLeaf: () => undefined } };
 	openDialogMode(app, { context: 'hello world', cursorIndex: 1, searchWord: 'hello', rawWord: 'hello' });
 	const dialog = boundary.lastDialog;
@@ -27,8 +29,7 @@ function createDialog(t) {
 }
 
 test('cursor debounce and cancellation use the modal owning window', async t => {
-	const { dialog, callbacks, ownerWindow, ownerDocument } = createDialog(t);
-	assert.deepEqual(ownerDocument.createElement.mock.calls[0].arguments, ['canvas']);
+	const { dialog, callbacks, ownerWindow } = createDialog(t);
 	dialog.onCursorMove('hello world', 2);
 	dialog.onCursorMove('hello world', 8);
 	assert.equal(callbacks[1].delay, 300);
@@ -63,7 +64,9 @@ test('cursor analysis rejection is handled by the debounce callback', async t =>
 test('opening the dialog creates a detached measurement canvas in its owning document', t => {
 	const { dialog, ownerDocument } = createDialog(t);
 	assert.equal(ownerDocument.createEl.mock.callCount(), 0);
-	assert.equal(ownerDocument.createElement.mock.callCount(), 1);
+	assert.equal(ownerDocument.createElement.mock.callCount(), 0);
+	assert.equal(ownerDocument.adoptNode.mock.callCount(), 1);
+	assert.equal(dialog.buttonMeasureCanvas.tagName, 'CANVAS');
 	assert.equal(dialog.buttonMeasureCanvas.ownerDocument, ownerDocument);
 	assert.equal(dialog.buttonMeasureCanvas.parentNode, null);
 });
